@@ -105,14 +105,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Workspace / Offices gallery */}
-      <section className="section-y bg-white">
-        <div className="container-x">
-          <SectionHeader eyebrow={ABOUT_GALLERIES.offices.eyebrow} title={ABOUT_GALLERIES.offices.title} accent={ABOUT_GALLERIES.offices.accent} description={ABOUT_GALLERIES.offices.description} />
-          <ImageSlider images={ABOUT_GALLERIES.offices.images} variant="cover" />
-        </div>
-      </section>
-
       {/* Team / Employees gallery */}
       <section className="section-y bg-green-50/40">
         <div className="container-x">
@@ -125,7 +117,7 @@ export default function About() {
       <section className="section-y bg-white">
         <div className="container-x">
           <SectionHeader eyebrow={ABOUT_GALLERIES.culture.eyebrow} title={ABOUT_GALLERIES.culture.title} accent={ABOUT_GALLERIES.culture.accent} description={ABOUT_GALLERIES.culture.description} />
-          <ImageSlider images={ABOUT_GALLERIES.culture.images} variant="cover" />
+          <ImageSlider images={ABOUT_GALLERIES.culture.images} variant="cards" />
         </div>
       </section>
 

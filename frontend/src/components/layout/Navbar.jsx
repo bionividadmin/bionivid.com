@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Dna } from "lucide-react";
-import { NAV } from "../../data/mock";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { NAV, SITE as MOCK_SITE } from "../../data/mock";
 import { Button } from "../ui/button";
+import useContent from "../../hooks/useContent";
+import { assetUrl } from "../../lib/api";
 
-const Logo = () => (
-  <Link to="/" className="flex items-center gap-2 group" aria-label="Bionivid Home">
-    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-      <Dna className="w-5 h-5 text-white" strokeWidth={2.2} />
-    </div>
-    <span className="text-2xl font-bold text-green-700 tracking-tight font-display">bionivid</span>
+const Logo = ({ src }) => (
+  <Link to="/" className="flex items-center group" aria-label="Bionivid Home">
+    {src ? (
+      <img src={src} alt="Bionivid" className="h-8 md:h-9 w-auto object-contain" />
+    ) : (
+      <span className="text-2xl font-bold text-green-700 tracking-tight font-display">bionivid</span>
+    )}
   </Link>
 );
 
 export default function Navbar() {
+  const { data: siteData } = useContent("site", MOCK_SITE);
+  const SITE = { ...MOCK_SITE, ...(siteData || {}) };
+  const logoSrc = assetUrl(SITE?.logo);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -31,7 +37,7 @@ export default function Navbar() {
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100" : "bg-white"}`}>
       <div className="container-x flex items-center justify-between h-16 md:h-20">
-        <Logo />
+        <Logo src={logoSrc} />
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
@@ -79,7 +85,7 @@ export default function Navbar() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} className="fixed inset-0 bg-black/40 z-40 lg:hidden" />
             <motion.aside initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "tween", duration: 0.28 }} className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white z-50 lg:hidden shadow-2xl flex flex-col">
               <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-                <Logo />
+                <Logo src={logoSrc} />
                 <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center"><X className="w-5 h-5" /></button>
               </div>
               <div className="flex-1 overflow-y-auto py-4">

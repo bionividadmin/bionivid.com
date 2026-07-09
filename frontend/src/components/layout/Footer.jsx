@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Twitter, Linkedin, Facebook, Instagram, Youtube, Phone, Mail, MapPin, Dna } from "lucide-react";
+import { Twitter, Linkedin, Facebook, Instagram, Youtube, Phone, Mail, MapPin } from "lucide-react";
 import { SITE as MOCK_SITE, FOOTER_LINKS } from "../../data/mock";
-import { subscribeNewsletter } from "../../lib/api";
+import { subscribeNewsletter, assetUrl } from "../../lib/api";
 import useContent from "../../hooks/useContent";
 
 export default function Footer() {
@@ -41,11 +41,12 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 md:gap-10">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                <Dna className="w-5 h-5 text-green-300" />
-              </div>
-              <span className="text-2xl font-bold text-white font-display">bionivid</span>
+            <div className="flex items-center gap-2 mb-4 bg-white/95 rounded-xl px-3 py-2 w-fit">
+              {SITE.logo ? (
+                <img src={assetUrl(SITE.logo)} alt="Bionivid" className="h-8 w-auto object-contain" />
+              ) : (
+                <span className="text-2xl font-bold text-green-700 font-display">bionivid</span>
+              )}
             </div>
             <p className="text-sm text-green-100/80 leading-relaxed">Innovative genomics solutions and services for a healthier tomorrow.</p>
             <div className="flex gap-2 mt-5">

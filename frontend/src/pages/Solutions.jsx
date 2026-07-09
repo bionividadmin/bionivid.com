@@ -8,8 +8,9 @@ import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import TestimonialsCarousel from "../components/common/TestimonialsCarousel";
 import { Button } from "../components/ui/button";
-import { SOLUTIONS as MOCK_SOLUTIONS } from "../data/mock";
+import { SOLUTIONS as MOCK_SOLUTIONS, SITE as MOCK_SITE } from "../data/mock";
 import useContent from "../hooks/useContent";
+import { assetUrl } from "../lib/api";
 
 const slugIcons = {
   "genome-station": Cpu,
@@ -21,7 +22,7 @@ const slugIcons = {
 
 // Solutions are fetched from the CMS. Local fallback is in data/mock.js.
 
-function SolutionBlock({ sol, idx }) {
+function SolutionBlock({ sol, idx, logo }) {
   const Icon = slugIcons[sol.slug] || Cpu;
   const reverse = idx % 2 === 1;
   return (
@@ -38,11 +39,17 @@ function SolutionBlock({ sol, idx }) {
           </div>
 
           <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="text-center md:order-2">
-            <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-700 mx-auto flex items-center justify-center mb-4"><Icon className="w-8 h-8" /></div>
+            {logo ? (
+              <div className="mx-auto mb-4 h-16 md:h-20 flex items-center justify-center">
+                <img src={assetUrl(logo)} alt={sol.title} className="max-h-full w-auto object-contain" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-700 mx-auto flex items-center justify-center mb-4"><Icon className="w-8 h-8" /></div>
+            )}
             <h2 className="text-2xl md:text-3xl font-bold font-display text-green-700">{sol.title}</h2>
             <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">{sol.tagline}</p>
             <div className="my-5 mx-auto max-w-sm aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-              <img src={sol.image} alt={sol.title} className="w-full h-full object-cover" loading="lazy" />
+              <img src={assetUrl(sol.image)} alt={sol.title} className="w-full h-full object-cover" loading="lazy" />
             </div>
             <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto">{sol.description}</p>
             {sol.externalUrl && (
@@ -68,7 +75,14 @@ function SolutionBlock({ sol, idx }) {
 
 export default function Solutions() {
   const { data: apiSolutions } = useContent("solutions", MOCK_SOLUTIONS);
+  const { data: siteData } = useContent("site", MOCK_SITE);
+  const SITE = { ...MOCK_SITE, ...(siteData || {}) };
   const allSolutions = (apiSolutions && apiSolutions.length) ? apiSolutions : MOCK_SOLUTIONS;
+  const logoFor = (slug) => {
+    if (slug === "nivilabs") return SITE.nivilabsLogo;
+    if (slug === "sqit" || slug === "sqit-online") return SITE.sqitLogo;
+    return null;
+  };
   return (
     <>
       <Helmet>

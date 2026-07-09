@@ -11,6 +11,23 @@ export const api = axios.create({
   timeout: 20000,
 });
 
+// Convert relative /api/uploads/... paths to absolute URLs (leaves absolute URLs alone).
+export function assetUrl(u) {
+  if (!u) return u;
+  if (typeof u !== "string") return u;
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.startsWith("/")) return `${BACKEND_URL}${u}`;
+  return u;
+}
+
+// Upload a file (admin only). Returns { url: "/api/uploads/xxx.png", filename, size }.
+export async function uploadFile(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await api.post("/admin/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
+  return { ...res.data, absoluteUrl: assetUrl(res.data.url) };
+}
+
 // Attach token if present
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);

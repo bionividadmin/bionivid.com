@@ -1,12 +1,14 @@
 import os
 import uuid
+import shutil
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, List
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, UploadFile, File, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -18,6 +20,8 @@ from auth import (
 import seed_data as seed
 
 ROOT_DIR = Path(__file__).parent
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
 load_dotenv(ROOT_DIR / ".env")
 
 # --------------------------------------------------------------------
@@ -123,6 +127,12 @@ async def _seed_singleton(col_name: str, doc: dict):
         d.setdefault("created_at", now_iso())
         await col.insert_one(d)
         log.info(f"Seeded singleton {col_name}")
+    else:
+        # Add any missing fields from seed (non-destructive migration)
+        missing = {k: v for k, v in doc.items() if k not in existing}
+        if missing:
+            await col.update_one({"id": doc["id"]}, {"$set": missing})
+            log.info(f"Added {list(missing.keys())} to {col_name}")
 
 
 async def _ensure_admin():
@@ -198,6 +208,36 @@ async def me(payload=Depends(require_admin)):
     if not admin:
         raise HTTPException(status_code=404, detail="Admin not found")
     return {"id": admin["id"], "email": admin["email"], "name": admin.get("name")}
+
+
+# --------------------------------------------------------------------
+# File uploads (admin)
+# --------------------------------------------------------------------
+ALLOWED_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".pdf"}
+MAX_SIZE = 8 * 1024 * 1024  # 8 MB
+
+
+@api.post("/admin/upload", dependencies=[Depends(require_admin)])
+async def upload_file(request: Request, file: UploadFile = File(...)):
+    ext = Path(file.filename or "").suffix.lower()
+    if ext not in ALLOWED_EXTS:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")
+    fname = f"{uuid.uuid4().hex}{ext}"
+    dest = UPLOAD_DIR / fname
+    total = 0
+    with open(dest, "wb") as f:
+        while True:
+            chunk = await file.read(1024 * 512)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > MAX_SIZE:
+                f.close()
+                dest.unlink(missing_ok=True)
+                raise HTTPException(status_code=413, detail="File too large (max 8 MB)")
+            f.write(chunk)
+    # Return relative URL — frontend prepends REACT_APP_BACKEND_URL.
+    return {"url": f"/api/uploads/{fname}", "filename": fname, "size": total}
 
 
 # --------------------------------------------------------------------
@@ -336,9 +376,10 @@ async def admin_delete(resource: str, item_id: str):
 
 
 # --------------------------------------------------------------------
-# Register router + CORS
+# Register router + static uploads + CORS
 # --------------------------------------------------------------------
 app.include_router(api)
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

@@ -18,6 +18,9 @@ SITE = {
     },
     "nivilabsUrl": "https://nivilabs.bionivid.com",
     "gazetteUrl": "https://bionivid.in/bionivid-gazette.pdf",
+    "logo": "https://customer-assets.emergentagent.com/job_nivilabs-showcase/artifacts/sx8jwdiv_Bionivid-Logo.png",
+    "nivilabsLogo": "https://customer-assets.emergentagent.com/job_nivilabs-showcase/artifacts/mmr3t9y8_preview.png",
+    "sqitLogo": "https://customer-assets.emergentagent.com/job_nivilabs-showcase/artifacts/ea0bfh6c_sqit.ai.green.png",
 }
 
 HERO_SLIDES = [

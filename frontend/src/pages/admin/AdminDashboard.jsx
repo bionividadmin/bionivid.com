@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dna, LogOut, LayoutDashboard, FileText, Users, MessageSquare, Image as ImageIcon, Newspaper, Award, Beaker, Cog, Building2, Mail, Search, Plus, Pencil, Trash2, Save, X, RefreshCw, ChevronRight } from "lucide-react";
+import { Dna, LogOut, LayoutDashboard, FileText, Users, MessageSquare, Image as ImageIcon, Newspaper, Award, Beaker, Cog, Building2, Mail, Search, Plus, Pencil, Trash2, Save, X, RefreshCw, ChevronRight, Upload } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useAuth } from "../../context/AuthContext";
-import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries } from "../../lib/api";
+import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries, uploadFile, assetUrl } from "../../lib/api";
 
 // -------------------- Resource registry --------------------
 const RESOURCES = [
@@ -25,8 +25,65 @@ const RESOURCES = [
   { key: "newsletter-subscribers", label: "Newsletter Subscribers", icon: Newspaper, group: "Inbox", readOnly: true, primary: ["email", "source", "created_at"] },
 ];
 
+// -------------------- Image upload field --------------------
+const IMG_FIELDS = /^(image|photo|logo|cover|src|banner|thumbnail|picture|avatar)$/i;
+const IMG_EXT = /\.(png|jpe?g|webp|gif|svg)(\?|$)/i;
+function isImageField(name, value) {
+  if (IMG_FIELDS.test(name)) return true;
+  if (typeof value === "string" && (IMG_EXT.test(value) || value.startsWith("/api/uploads/"))) return true;
+  return false;
+}
+
+function ImageField({ name, value, onChange }) {
+  const inputRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true); setErr(null);
+    try {
+      const { url } = await uploadFile(file);
+      onChange(url);
+    } catch (ex) {
+      setErr(ex?.response?.data?.detail || "Upload failed");
+    } finally { setBusy(false); if (inputRef.current) inputRef.current.value = ""; }
+  };
+
+  const preview = assetUrl(value);
+
+  return (
+    <div>
+      <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{name}</label>
+      <div className="mt-1 flex items-start gap-3">
+        <div className="relative w-24 h-24 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+          {preview ? (
+            <img src={preview} alt={name} className="w-full h-full object-contain" />
+          ) : (
+            <ImageIcon className="w-6 h-6 text-gray-300" />
+          )}
+          {busy && <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs text-green-700">Uploading…</div>}
+        </div>
+        <div className="flex-1 min-w-0">
+          <input value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder="Image URL or upload…" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-mono focus:outline-none focus:border-green-500" />
+          <div className="mt-2 flex items-center gap-2">
+            <input ref={inputRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+            <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"><Upload className="w-3.5 h-3.5" />{busy ? "Uploading…" : "Upload"}</button>
+            {value && <button type="button" onClick={() => onChange("")} className="text-xs text-gray-500 hover:text-red-600">Clear</button>}
+          </div>
+          {err && <p className="text-xs text-red-600 mt-1">{err}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // -------------------- Field editor --------------------
 function FieldEditor({ name, value, onChange }) {
+  if (isImageField(name, value) && (typeof value === "string" || value == null || value === undefined)) {
+    return <ImageField name={name} value={value} onChange={onChange} />;
+  }
   const isBool = typeof value === "boolean";
   const isNumber = typeof value === "number";
   const isArray = Array.isArray(value);

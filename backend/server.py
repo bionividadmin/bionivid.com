@@ -1,89 +1,349 @@
-from fastapi import FastAPI, APIRouter
+import os
+import uuid
+import logging
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional, List
+
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr, Field
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
 
+from auth import (
+    hash_password, verify_password, create_access_token, require_admin,
+)
+import seed_data as seed
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# --------------------------------------------------------------------
+# DB
+# --------------------------------------------------------------------
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
-# Create the main app without a prefix
-app = FastAPI()
+# --------------------------------------------------------------------
+# App
+# --------------------------------------------------------------------
+app = FastAPI(title="Bionivid CMS API")
+api = APIRouter(prefix="/api")
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+log = logging.getLogger("bionivid")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+# --------------------------------------------------------------------
+# Helpers
+# --------------------------------------------------------------------
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
+def clean(doc: dict | None) -> dict | None:
+    """Remove Mongo _id so responses stay serializable."""
+    if not doc:
+        return doc
+    doc.pop("_id", None)
+    return doc
+
+
+# Map public/admin resource names -> Mongo collections + default sort
+RESOURCES = {
+    "hero-slides":          {"col": "hero_slides",       "sort": [("order", 1)]},
+    "stats":                {"col": "stats",             "sort": [("order", 1)]},
+    "services":             {"col": "services",          "sort": [("order", 1)]},
+    "solutions":            {"col": "solutions",         "sort": [("order", 1)]},
+    "tech-platforms":       {"col": "tech_platforms",    "sort": [("order", 1)]},
+    "omics-categories":     {"col": "omics_categories",  "sort": [("order", 1)]},
+    "values":               {"col": "values",            "sort": [("order", 1)]},
+    "leadership":           {"col": "leadership",        "sort": [("order", 1)]},
+    "clients":              {"col": "clients",           "sort": [("order", 1)]},
+    "testimonials":         {"col": "testimonials",      "sort": [("order", 1)]},
+    "publications":         {"col": "publications",      "sort": [("year", -1)]},
+    "contact-submissions":  {"col": "contact_submissions", "sort": [("created_at", -1)], "admin_only": True},
+    "newsletter-subscribers": {"col": "newsletter_subscribers", "sort": [("created_at", -1)], "admin_only": True},
+}
+
+
+def _res(name: str) -> dict:
+    if name not in RESOURCES:
+        raise HTTPException(status_code=404, detail=f"Unknown resource '{name}'")
+    return RESOURCES[name]
+
+
+# --------------------------------------------------------------------
+# Models
+# --------------------------------------------------------------------
+class LoginBody(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class ContactBody(BaseModel):
+    name: str
+    email: EmailStr
+    org: Optional[str] = None
+    phone: Optional[str] = None
+    subject: Optional[str] = None
+    message: str
+
+
+class NewsletterBody(BaseModel):
+    email: EmailStr
+    source: Optional[str] = "footer"
+
+
+# --------------------------------------------------------------------
+# Startup: seed data
+# --------------------------------------------------------------------
+async def _seed_collection(col_name: str, items: list, key: str | None = None):
+    col = db[col_name]
+    if await col.count_documents({}) == 0 and items:
+        docs = []
+        for it in items:
+            d = dict(it)
+            if "id" not in d:
+                d["id"] = str(uuid.uuid4())
+            d.setdefault("created_at", now_iso())
+            docs.append(d)
+        await col.insert_many(docs)
+        log.info(f"Seeded {len(docs)} into {col_name}")
+
+
+async def _seed_singleton(col_name: str, doc: dict):
+    col = db[col_name]
+    existing = await col.find_one({"id": doc["id"]})
+    if not existing:
+        d = dict(doc)
+        d.setdefault("created_at", now_iso())
+        await col.insert_one(d)
+        log.info(f"Seeded singleton {col_name}")
+
+
+async def _ensure_admin():
+    col = db["admins"]
+    if await col.count_documents({}) == 0:
+        doc = {
+            "id": str(uuid.uuid4()),
+            "email": "admin@bionivid.com",
+            "name": "Bionivid Admin",
+            "password_hash": hash_password("Admin@1234"),
+            "role": "admin",
+            "created_at": now_iso(),
+        }
+        await col.insert_one(doc)
+        log.info("Seeded default admin: admin@bionivid.com / Admin@1234")
+
+
+@app.on_event("startup")
+async def on_startup():
+    try:
+        await _ensure_admin()
+        await _seed_singleton("site_settings", seed.SITE)
+        await _seed_singleton("about_galleries", seed.ABOUT_GALLERIES)
+        await _seed_collection("hero_slides", seed.HERO_SLIDES)
+        await _seed_collection("stats", seed.STATS)
+        await _seed_collection("services", seed.SERVICES)
+        await _seed_collection("solutions", seed.SOLUTIONS)
+        await _seed_collection("tech_platforms", seed.TECH_PLATFORMS)
+        await _seed_collection("omics_categories", seed.OMICS_CATEGORIES)
+        await _seed_collection("values", seed.VALUES)
+        await _seed_collection("leadership", seed.LEADERSHIP)
+        await _seed_collection("clients", seed.CLIENTS)
+        await _seed_collection("testimonials", seed.TESTIMONIALS)
+        await _seed_collection("publications", seed.PUBLICATIONS)
+        # Publications need a unique_id, add if missing? Only add id if missing (handled).
+        log.info("Seed complete.")
+    except Exception as e:
+        log.exception(f"Seed failed: {e}")
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    client.close()
+
+
+# --------------------------------------------------------------------
+# Health
+# --------------------------------------------------------------------
+@api.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"service": "Bionivid CMS", "status": "ok"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+# --------------------------------------------------------------------
+# Auth
+# --------------------------------------------------------------------
+@api.post("/auth/login")
+async def login(body: LoginBody):
+    admin = await db["admins"].find_one({"email": body.email.lower()})
+    if not admin or not verify_password(body.password, admin["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = create_access_token(sub=admin["id"], extra={"role": "admin", "email": admin["email"]})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "admin": {"id": admin["id"], "email": admin["email"], "name": admin.get("name")},
+    }
 
-# Include the router in the main app
-app.include_router(api_router)
+
+@api.get("/auth/me")
+async def me(payload=Depends(require_admin)):
+    admin = await db["admins"].find_one({"id": payload["sub"]})
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    return {"id": admin["id"], "email": admin["email"], "name": admin.get("name")}
+
+
+# --------------------------------------------------------------------
+# Public content (GET only)
+# --------------------------------------------------------------------
+@api.get("/content/site")
+async def get_site():
+    doc = await db["site_settings"].find_one({"id": "main"})
+    return clean(doc) or {}
+
+
+@api.get("/content/about-galleries")
+async def get_about_galleries():
+    doc = await db["about_galleries"].find_one({"id": "main"})
+    return clean(doc) or {}
+
+
+@api.get("/content/{resource}")
+async def list_public(resource: str, q: Optional[str] = None):
+    meta = _res(resource)
+    if meta.get("admin_only"):
+        raise HTTPException(status_code=404, detail="Not found")
+    cursor = db[meta["col"]].find({}).sort(meta["sort"])
+    docs = [clean(d) for d in await cursor.to_list(length=1000)]
+    if q and docs:
+        ql = q.lower()
+        docs = [d for d in docs if ql in str(d).lower()]
+    return docs
+
+
+# --------------------------------------------------------------------
+# Public writes: contact + newsletter
+# --------------------------------------------------------------------
+@api.post("/contact")
+async def submit_contact(body: ContactBody):
+    doc = body.model_dump()
+    doc["id"] = str(uuid.uuid4())
+    doc["created_at"] = now_iso()
+    await db["contact_submissions"].insert_one(doc)
+    return {"ok": True, "id": doc["id"]}
+
+
+@api.post("/newsletter")
+async def subscribe_newsletter(body: NewsletterBody):
+    email = body.email.lower()
+    existing = await db["newsletter_subscribers"].find_one({"email": email})
+    if existing:
+        return {"ok": True, "id": existing["id"], "already": True}
+    doc = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "source": body.source or "footer",
+        "created_at": now_iso(),
+    }
+    await db["newsletter_subscribers"].insert_one(doc)
+    return {"ok": True, "id": doc["id"]}
+
+
+# --------------------------------------------------------------------
+# Admin CRUD (generic)
+# --------------------------------------------------------------------
+@api.get("/admin/site", dependencies=[Depends(require_admin)])
+async def admin_get_site():
+    return clean(await db["site_settings"].find_one({"id": "main"})) or {}
+
+
+@api.put("/admin/site", dependencies=[Depends(require_admin)])
+async def admin_put_site(body: dict):
+    body["id"] = "main"
+    body["updated_at"] = now_iso()
+    await db["site_settings"].update_one({"id": "main"}, {"$set": body}, upsert=True)
+    return clean(await db["site_settings"].find_one({"id": "main"}))
+
+
+@api.get("/admin/about-galleries", dependencies=[Depends(require_admin)])
+async def admin_get_galleries():
+    return clean(await db["about_galleries"].find_one({"id": "main"})) or {}
+
+
+@api.put("/admin/about-galleries", dependencies=[Depends(require_admin)])
+async def admin_put_galleries(body: dict):
+    body["id"] = "main"
+    body["updated_at"] = now_iso()
+    await db["about_galleries"].update_one({"id": "main"}, {"$set": body}, upsert=True)
+    return clean(await db["about_galleries"].find_one({"id": "main"}))
+
+
+@api.get("/admin/{resource}", dependencies=[Depends(require_admin)])
+async def admin_list(resource: str, q: Optional[str] = None, limit: int = 500):
+    meta = _res(resource)
+    cursor = db[meta["col"]].find({}).sort(meta["sort"]).limit(limit)
+    docs = [clean(d) for d in await cursor.to_list(length=limit)]
+    if q:
+        ql = q.lower()
+        docs = [d for d in docs if ql in str(d).lower()]
+    return docs
+
+
+@api.get("/admin/{resource}/{item_id}", dependencies=[Depends(require_admin)])
+async def admin_get(resource: str, item_id: str):
+    meta = _res(resource)
+    doc = clean(await db[meta["col"]].find_one({"id": item_id}))
+    if not doc:
+        raise HTTPException(status_code=404, detail="Not found")
+    return doc
+
+
+@api.post("/admin/{resource}", dependencies=[Depends(require_admin)])
+async def admin_create(resource: str, body: dict):
+    meta = _res(resource)
+    body["id"] = str(uuid.uuid4())
+    body["created_at"] = now_iso()
+    await db[meta["col"]].insert_one(body)
+    return clean(body)
+
+
+@api.put("/admin/{resource}/{item_id}", dependencies=[Depends(require_admin)])
+async def admin_update(resource: str, item_id: str, body: dict):
+    meta = _res(resource)
+    body.pop("_id", None)
+    body["id"] = item_id
+    body["updated_at"] = now_iso()
+    res = await db[meta["col"]].update_one({"id": item_id}, {"$set": body}, upsert=False)
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return clean(await db[meta["col"]].find_one({"id": item_id}))
+
+
+@api.delete("/admin/{resource}/{item_id}", dependencies=[Depends(require_admin)])
+async def admin_delete(resource: str, item_id: str):
+    meta = _res(resource)
+    res = await db[meta["col"]].delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+
+# --------------------------------------------------------------------
+# Register router + CORS
+# --------------------------------------------------------------------
+app.include_router(api)
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Twitter, Linkedin, Facebook, Instagram, Youtube, Phone, Mail, MapPin, Dna } from "lucide-react";
 import { SITE, FOOTER_LINKS } from "../../data/mock";
+import { subscribeNewsletter } from "../../lib/api";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -10,9 +11,17 @@ export default function Footer() {
   const subscribe = (e) => {
     e.preventDefault();
     if (!email) return;
-    setSubscribed(true);
-    setEmail("");
-    setTimeout(() => setSubscribed(false), 3000);
+    subscribeNewsletter({ email, source: "footer" })
+      .then(() => {
+        setSubscribed(true);
+        setEmail("");
+        setTimeout(() => setSubscribed(false), 3000);
+      })
+      .catch(() => {
+        setSubscribed(true);
+        setEmail("");
+        setTimeout(() => setSubscribed(false), 3000);
+      });
   };
 
   const socials = [

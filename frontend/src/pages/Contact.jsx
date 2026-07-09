@@ -5,6 +5,7 @@ import { Phone, Mail, MapPin, Send, Building2, MessageSquare } from "lucide-reac
 import PageHero from "../components/common/PageHero";
 import { Button } from "../components/ui/button";
 import { SITE } from "../data/mock";
+import { submitContact } from "../lib/api";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", org: "", phone: "", subject: "", message: "" });
@@ -13,11 +14,23 @@ export default function Contact() {
   const submit = (e) => {
     e.preventDefault();
     setStatus("sending");
-    setTimeout(() => {
-      setStatus("sent");
-      setForm({ name: "", email: "", org: "", phone: "", subject: "", message: "" });
-      setTimeout(() => setStatus(null), 4000);
-    }, 700);
+    submitContact({
+      name: form.name,
+      email: form.email,
+      org: form.org || null,
+      phone: form.phone || null,
+      subject: form.subject || null,
+      message: form.message,
+    })
+      .then(() => {
+        setStatus("sent");
+        setForm({ name: "", email: "", org: "", phone: "", subject: "", message: "" });
+        setTimeout(() => setStatus(null), 4000);
+      })
+      .catch(() => {
+        setStatus("error");
+        setTimeout(() => setStatus(null), 4000);
+      });
   };
 
   return (
@@ -99,6 +112,7 @@ export default function Contact() {
               </Button>
             </div>
             {status === "sent" && <div className="mt-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3">Thanks for reaching out. Our team will get back to you shortly.</div>}
+            {status === "error" && <div className="mt-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3">Something went wrong. Please try again in a moment.</div>}
           </motion.form>
         </div>
       </section>

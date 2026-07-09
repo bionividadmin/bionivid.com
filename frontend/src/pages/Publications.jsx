@@ -4,9 +4,12 @@ import { Helmet } from "react-helmet-async";
 import { ExternalLink, Search, ArrowUpDown, BookOpen, ChevronLeft, ChevronRight, Mail } from "lucide-react";
 import PageHero from "../components/common/PageHero";
 import { Button } from "../components/ui/button";
-import { PUBLICATIONS } from "../data/mock";
+import { PUBLICATIONS as MOCK_PUBS } from "../data/mock";
+import useContent from "../hooks/useContent";
+import { subscribeNewsletter } from "../lib/api";
 
 export default function Publications() {
+  const { data: PUBLICATIONS } = useContent("publications", MOCK_PUBS);
   const [q, setQ] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
@@ -24,7 +27,7 @@ export default function Publications() {
       return 0;
     });
     return list;
-  }, [q, sortKey, sortDir]);
+  }, [q, sortKey, sortDir, PUBLICATIONS]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -39,7 +42,9 @@ export default function Publications() {
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (!email) return;
-    setSubscribed(true); setEmail(""); setTimeout(() => setSubscribed(false), 3000);
+    subscribeNewsletter({ email, source: "publications" })
+      .then(() => { setSubscribed(true); setEmail(""); setTimeout(() => setSubscribed(false), 3000); })
+      .catch(() => { setSubscribed(true); setEmail(""); setTimeout(() => setSubscribed(false), 3000); });
   };
 
   return (

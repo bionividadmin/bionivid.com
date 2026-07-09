@@ -376,7 +376,7 @@ export const FOOTER_LINKS = {
     { label: "Publications", to: "/publications" },
     { label: "Genomics Services", to: "/genomics-services" },
     { label: "Genomics Solutions", to: "/genomics-solutions" },
-    { label: "Bionivid Gazette", to: "/gazette" },
+    { label: "Bionivid Gazette", href: "https://bionivid.in/bionivid-gazette.pdf" },
     { label: "Contact Us", to: "/contact" },
   ],
 };

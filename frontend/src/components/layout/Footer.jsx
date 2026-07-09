@@ -49,7 +49,13 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
             <ul className="space-y-2.5">
               {FOOTER_LINKS.quick.map((l) => (
-                <li key={l.label}><Link to={l.to} className="text-sm text-green-100/70 hover:text-white transition-colors">{l.label}</Link></li>
+                <li key={l.label}>
+                  {l.href ? (
+                    <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-green-100/70 hover:text-white transition-colors">{l.label}</a>
+                  ) : (
+                    <Link to={l.to} className="text-sm text-green-100/70 hover:text-white transition-colors">{l.label}</Link>
+                  )}
+                </li>
               ))}
             </ul>
           </div>

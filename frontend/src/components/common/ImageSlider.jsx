@@ -43,7 +43,7 @@ export default function ImageSlider({ images = [], autoPlay = true, interval = 5
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ delay: i * 0.06 }}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] shadow-md ring-1 ring-black/5"
+                className="group relative rounded-2xl overflow-hidden aspect-square shadow-md ring-1 ring-black/5"
               >
                 <img src={img.src} alt={img.caption || "Gallery"} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -60,8 +60,8 @@ export default function ImageSlider({ images = [], autoPlay = true, interval = 5
   // cover variant
   const cur = images[idx];
   return (
-    <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="relative">
-      <div className="relative rounded-3xl overflow-hidden aspect-[16/9] md:aspect-[21/9] bg-gray-100 shadow-xl ring-1 ring-black/5">
+    <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="relative max-w-2xl mx-auto">
+      <div className="relative rounded-3xl overflow-hidden aspect-square bg-gray-100 shadow-xl ring-1 ring-black/5">
         <AnimatePresence mode="wait">
           <motion.img
             key={cur.src}
@@ -91,7 +91,7 @@ export default function ImageSlider({ images = [], autoPlay = true, interval = 5
       {/* Thumbnails */}
       <div className="mt-4 grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-3">
         {images.map((img, i) => (
-          <button key={img.src} onClick={() => setIdx(i)} className={`relative aspect-[4/3] rounded-lg overflow-hidden ring-2 transition-all ${i === idx ? "ring-green-500 scale-[1.02]" : "ring-transparent hover:ring-green-200 opacity-80 hover:opacity-100"}`} aria-label={`Show image ${i + 1}`}>
+          <button key={img.src} onClick={() => setIdx(i)} className={`relative aspect-square rounded-lg overflow-hidden ring-2 transition-all ${i === idx ? "ring-green-500 scale-[1.02]" : "ring-transparent hover:ring-green-200 opacity-80 hover:opacity-100"}`} aria-label={`Show image ${i + 1}`}>
             <img src={img.src} alt="thumb" loading="lazy" className="w-full h-full object-cover" />
           </button>
         ))}

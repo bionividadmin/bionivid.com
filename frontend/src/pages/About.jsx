@@ -8,8 +8,9 @@ import StatsBar from "../components/common/StatsBar";
 import SectionHeader from "../components/common/SectionHeader";
 import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
+import ImageSlider from "../components/common/ImageSlider";
 import { Button } from "../components/ui/button";
-import { VALUES, LEADERSHIP, LIFE_AT_BIONIVID } from "../data/mock";
+import { VALUES, LEADERSHIP, ABOUT_GALLERIES } from "../data/mock";
 
 const valueIcons = { Handshake, Trophy, Users, BadgeCheck };
 
@@ -104,22 +105,27 @@ export default function About() {
         </div>
       </section>
 
-      {/* Life at Bionivid */}
-      <section className="section-y bg-green-50/50">
-        <div className="container-x grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div>
-            <SectionHeader align="left" eyebrow="Life at Bionivid" title="Life at" accent="Bionivid" />
-            <p className="text-sm text-gray-600 leading-relaxed">We are a diverse group of trained multi-specialists capable of tackling the challenges of interdisciplinary modern biological research. Our analytics and wet lab teams have years of domain expertise in Genomics, Transcriptomics, Metagenomics, Epigenomics, Metatranscriptomics and various 'Omics' applications.</p>
-          </div>
-          <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3">
-            {LIFE_AT_BIONIVID.map((it, i) => (
-              <motion.div key={it.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="relative rounded-xl overflow-hidden aspect-[3/4] group">
-                <img src={it.image} alt={it.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2"><p className="text-white text-xs md:text-sm font-semibold">{it.label}</p></div>
-              </motion.div>
-            ))}
-          </div>
+      {/* Workspace / Offices gallery */}
+      <section className="section-y bg-white">
+        <div className="container-x">
+          <SectionHeader eyebrow={ABOUT_GALLERIES.offices.eyebrow} title={ABOUT_GALLERIES.offices.title} accent={ABOUT_GALLERIES.offices.accent} description={ABOUT_GALLERIES.offices.description} />
+          <ImageSlider images={ABOUT_GALLERIES.offices.images} variant="cover" />
+        </div>
+      </section>
+
+      {/* Team / Employees gallery */}
+      <section className="section-y bg-green-50/40">
+        <div className="container-x">
+          <SectionHeader eyebrow={ABOUT_GALLERIES.team.eyebrow} title={ABOUT_GALLERIES.team.title} accent={ABOUT_GALLERIES.team.accent} description={ABOUT_GALLERIES.team.description} />
+          <ImageSlider images={ABOUT_GALLERIES.team.images} variant="cards" />
+        </div>
+      </section>
+
+      {/* Life at Bionivid - Culture gallery */}
+      <section className="section-y bg-white">
+        <div className="container-x">
+          <SectionHeader eyebrow={ABOUT_GALLERIES.culture.eyebrow} title={ABOUT_GALLERIES.culture.title} accent={ABOUT_GALLERIES.culture.accent} description={ABOUT_GALLERIES.culture.description} />
+          <ImageSlider images={ABOUT_GALLERIES.culture.images} variant="cover" />
         </div>
       </section>
 

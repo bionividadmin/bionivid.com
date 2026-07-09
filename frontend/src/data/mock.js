@@ -311,6 +311,50 @@ export const EDUCATION_PROGRAMS = [
   { id: "internships", title: "Internships", body: "Full-time internships combining wet lab and dry lab exposure across omics domains.", icon: "GraduationCap" },
 ];
 
+export const ABOUT_GALLERIES = {
+  offices: {
+    eyebrow: "Our Workspace",
+    title: "Inside",
+    accent: "Bionivid",
+    description: "A modern, purpose-built environment where wet lab, dry lab and collaboration spaces come together.",
+    images: [
+      { src: "https://images.pexels.com/photos/9300768/pexels-photo-9300768.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: "Reception & Front Desk" },
+      { src: "https://images.pexels.com/photos/13219418/pexels-photo-13219418.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: "Open Workspace" },
+      { src: "https://images.unsplash.com/photo-1748000415624-679f07b4d80e", caption: "Meeting Rooms" },
+      { src: "https://images.unsplash.com/photo-1576669801838-1b1c52121e6a", caption: "Collaboration Zone" },
+      { src: "https://images.pexels.com/photos/5827325/pexels-photo-5827325.jpeg", caption: "Executive Suite" },
+      { src: "https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg", caption: "Bionivid HQ" },
+    ],
+  },
+  team: {
+    eyebrow: "Our People",
+    title: "Meet the",
+    accent: "Bionivid Team",
+    description: "A diverse group of scientists, bioinformaticians, and engineers united by a passion for genomics.",
+    images: [
+      { src: "https://images.unsplash.com/photo-1631556759511-6ce895fbf0ad", caption: "Senior Scientists" },
+      { src: "https://images.unsplash.com/photo-1707944745899-104a4b12d945", caption: "Research Team" },
+      { src: "https://images.unsplash.com/photo-1486825586573-7131f7991bdd", caption: "Bioinformaticians" },
+      { src: "https://images.unsplash.com/photo-1581093577421-f561a654a353", caption: "Wet Lab Specialists" },
+      { src: "https://images.unsplash.com/photo-1582719471384-894fbb16e074", caption: "NGS Analysts" },
+      { src: "https://images.unsplash.com/photo-1602052577122-f73b9710adba", caption: "Molecular Biologists" },
+    ],
+  },
+  culture: {
+    eyebrow: "Life at Bionivid",
+    title: "Our",
+    accent: "Culture",
+    description: "Team celebrations, off-sites, workshops and everyday moments that shape who we are.",
+    images: [
+      { src: "https://images.pexels.com/photos/12903168/pexels-photo-12903168.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: "Team Discussions" },
+      { src: "https://images.pexels.com/photos/5945799/pexels-photo-5945799.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", caption: "Collaboration Sessions" },
+      { src: "https://images.unsplash.com/photo-1600880292089-90a7e086ee0c", caption: "Brainstorming" },
+      { src: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca", caption: "Group Off-sites" },
+      { src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655", caption: "Workshops & Training" },
+    ],
+  },
+};
+
 export const FOOTER_LINKS = {
   services: [
     { label: "Genomics Services", to: "/genomics-services" },
@@ -332,6 +376,7 @@ export const FOOTER_LINKS = {
     { label: "Publications", to: "/publications" },
     { label: "Genomics Services", to: "/genomics-services" },
     { label: "Genomics Solutions", to: "/genomics-solutions" },
+    { label: "Bionivid Gazette", to: "/gazette" },
     { label: "Contact Us", to: "/contact" },
   ],
 };

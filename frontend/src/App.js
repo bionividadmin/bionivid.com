@@ -13,6 +13,7 @@ const Services = lazy(() => import("./pages/Services"));
 const Solutions = lazy(() => import("./pages/Solutions"));
 const Education = lazy(() => import("./pages/Education"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Gazette = lazy(() => import("./pages/Gazette"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -40,6 +41,7 @@ function App() {
                 <Route path="/genomics-solutions" element={<Solutions />} />
                 <Route path="/education" element={<Education />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/gazette" element={<Gazette />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="*" element={<NotFound />} />

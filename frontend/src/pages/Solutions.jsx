@@ -8,7 +8,8 @@ import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import TestimonialsCarousel from "../components/common/TestimonialsCarousel";
 import { Button } from "../components/ui/button";
-import { SOLUTIONS } from "../data/mock";
+import { SOLUTIONS as MOCK_SOLUTIONS } from "../data/mock";
+import useContent from "../hooks/useContent";
 
 const slugIcons = {
   "genome-station": Cpu,
@@ -18,43 +19,7 @@ const slugIcons = {
   "nivilabs": FlaskConical,
 };
 
-// Additional solutions rendered alongside SOLUTIONS with the same layout
-const EXTRA_SOLUTIONS = [
-  {
-    slug: "sqit-online",
-    title: "SQIT.online",
-    tagline: "Cloud Gateway to SQIT.ai Desktop",
-    image: "https://images.pexels.com/photos/6248959/pexels-photo-6248959.jpeg",
-    description:
-      "SQIT.online is the web-based front-end for our flagship SQIT.ai desktop workbench. Submit datasets and analysis specs online — our scientists run your workflow on dedicated SQIT.ai instances hosted on Bionivid's servers and deliver publication-ready results.",
-    features: [
-      "Submit analysis requests through a simple online form",
-      "Runs on dedicated SQIT.ai desktop instances on our HPC servers",
-      "No local installation — zero setup time on your side",
-      "Reproducible pipelines curated by SQIT.ai",
-      "Expert scientist oversight on every run",
-      "Publication-ready QC reports, tables and figures delivered securely",
-    ],
-    externalUrl: "https://sqit.online",
-  },
-  {
-    slug: "nivilabs",
-    title: "niviLabs",
-    tagline: "Premium Reagents & Kits",
-    image: "https://images.pexels.com/photos/13014236/pexels-photo-13014236.jpeg",
-    description:
-      "niviLabs is Bionivid's in-house catalog of premium reagents, engineered for absolute reproducibility. Source high-quality enzymes, kits, reagents, consumables and lab instruments — all backed by a one-click Request-for-Quote (RFQ) system.",
-    features: [
-      "High-purity molecular biology enzymes for cloning, PCR and genome editing",
-      "Optimized buffers, master mixes and solutions for reproducible results",
-      "Complete DNA/RNA extraction, amplification and NGS library-prep kits",
-      "Laboratory consumables built to strict molecular biology standards",
-      "One-click Request-for-Quote (RFQ) procurement system",
-      "Backed by 10+ years of wet-lab expertise from Bionivid",
-    ],
-    externalUrl: "https://nivilabs.bionivid.com",
-  },
-];
+// Solutions are fetched from the CMS. Local fallback is in data/mock.js.
 
 function SolutionBlock({ sol, idx }) {
   const Icon = slugIcons[sol.slug] || Cpu;
@@ -102,7 +67,8 @@ function SolutionBlock({ sol, idx }) {
 }
 
 export default function Solutions() {
-  const allSolutions = [...SOLUTIONS, ...EXTRA_SOLUTIONS];
+  const { data: apiSolutions } = useContent("solutions", MOCK_SOLUTIONS);
+  const allSolutions = (apiSolutions && apiSolutions.length) ? apiSolutions : MOCK_SOLUTIONS;
   return (
     <>
       <Helmet>

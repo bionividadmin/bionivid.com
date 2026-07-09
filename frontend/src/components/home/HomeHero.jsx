@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { HERO_SLIDES } from "../../data/mock";
+import { HERO_SLIDES as MOCK } from "../../data/mock";
 import { Button } from "../ui/button";
+import useContent from "../../hooks/useContent";
 
 export default function HomeHero() {
+  const { data: HERO_SLIDES } = useContent("hero-slides", MOCK);
   const [idx, setIdx] = useState(0);
-  const total = HERO_SLIDES.length;
-  const next = () => setIdx((i) => (i + 1) % total);
-  const prev = () => setIdx((i) => (i - 1 + total) % total);
+  const total = HERO_SLIDES?.length || 0;
+  const next = () => setIdx((i) => (total ? (i + 1) % total : 0));
+  const prev = () => setIdx((i) => (total ? (i - 1 + total) % total : 0));
+  const nav = useNavigate();
 
   useEffect(() => {
     const id = setInterval(next, 6500);
@@ -17,7 +20,8 @@ export default function HomeHero() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const s = HERO_SLIDES[idx];
+  const s = HERO_SLIDES && HERO_SLIDES.length ? HERO_SLIDES[idx % HERO_SLIDES.length] : null;
+  if (!s) return <section className="min-h-[40vh]" />;
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-green-50/70 via-white to-white dna-pattern">
       <div aria-hidden className="absolute left-1/2 top-8 w-56 opacity-25 hidden lg:block">

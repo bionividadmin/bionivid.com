@@ -8,7 +8,8 @@ import SectionHeader from "../components/common/SectionHeader";
 import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import { Button } from "../components/ui/button";
-import { OMICS_CATEGORIES, TECH_PLATFORMS } from "../data/mock";
+import { OMICS_CATEGORIES as MOCK_OMICS, TECH_PLATFORMS as MOCK_TECH } from "../data/mock";
+import useContent from "../hooks/useContent";
 
 const omicsIcons = { Dna, Microscope, ShieldCheck, Activity };
 const features = [
@@ -20,6 +21,10 @@ const features = [
 ];
 
 export default function Services() {
+  const { data: TECH_PLATFORMS } = useContent("tech-platforms", MOCK_TECH);
+  const { data: OMICS_CATEGORIES } = useContent("omics-categories", MOCK_OMICS);
+  const platforms = TECH_PLATFORMS || [];
+  const omics = OMICS_CATEGORIES || [];
   return (
     <>
       <Helmet>
@@ -68,7 +73,7 @@ export default function Services() {
               <h3 className="text-2xl font-bold font-display text-gray-900 leading-tight">Contract Research Services</h3>
               <p className="text-sm text-gray-600 mt-3">World-class equipment paired with expert scientific execution.</p>
             </div>
-            {TECH_PLATFORMS.map((t, i) => (
+            {platforms.map((t, i) => (
               <motion.div key={t.name} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-green-200 hover:shadow-lg transition-all">
                 <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center overflow-hidden">
                   <img src={t.image} alt={t.name} className="w-full h-full object-cover" loading="lazy" />
@@ -88,7 +93,7 @@ export default function Services() {
         <div className="container-x">
           <SectionHeader eyebrow="Multi-Omics Services" title="End-to-end" accent="omics workflows" description="From sample prep to insight — across genome, epigenome, microbiome and transcriptome." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {OMICS_CATEGORIES.map((cat, i) => {
+            {omics.map((cat, i) => {
               const Icon = omicsIcons[cat.icon] || Dna;
               return (
                 <motion.div key={cat.title} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 hover:border-green-200 hover:shadow-lg transition-all">

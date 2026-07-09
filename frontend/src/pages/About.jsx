@@ -10,11 +10,18 @@ import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import ImageSlider from "../components/common/ImageSlider";
 import { Button } from "../components/ui/button";
-import { VALUES, LEADERSHIP, ABOUT_GALLERIES } from "../data/mock";
+import { VALUES as MOCK_VALUES, LEADERSHIP as MOCK_LEAD, ABOUT_GALLERIES as MOCK_GAL } from "../data/mock";
+import useContent from "../hooks/useContent";
 
 const valueIcons = { Handshake, Trophy, Users, BadgeCheck };
 
 export default function About() {
+  const { data: VALUES } = useContent("values", MOCK_VALUES);
+  const { data: LEADERSHIP } = useContent("leadership", MOCK_LEAD);
+  const { data: galleriesData } = useContent("about-galleries", MOCK_GAL);
+  const ABOUT_GALLERIES = galleriesData || MOCK_GAL;
+  const valuesList = VALUES || [];
+  const leaders = LEADERSHIP || [];
   return (
     <>
       <Helmet>
@@ -60,7 +67,7 @@ export default function About() {
         <div className="container-x">
           <SectionHeader eyebrow="Our Values" title="Company" accent="Values" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-            {VALUES.map((v, i) => {
+            {valuesList.map((v, i) => {
               const Icon = valueIcons[v.icon] || BadgeCheck;
               return (
                 <motion.div key={v.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 text-center hover:shadow-lg hover:-translate-y-1 hover:border-green-200 transition-all">
@@ -87,7 +94,7 @@ export default function About() {
             <p className="mt-3 text-sm text-gray-600 leading-relaxed">Our vision is to develop Bionivid as an industry leader with an emphasis on innovation, authenticity, service excellence and supreme customer delight.</p>
           </div>
           <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {LEADERSHIP.map((p, i) => (
+            {leaders.map((p, i) => (
               <motion.div key={p.name} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
                 <div className="aspect-square bg-gray-100 overflow-hidden">
                   <img src={p.photo} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />

@@ -1,8 +1,11 @@
 import React from "react";
-import { CLIENTS } from "../../data/mock";
+import { CLIENTS as MOCK } from "../../data/mock";
+import useContent from "../../hooks/useContent";
 
 export default function ClientsMarquee({ title = "Our Clients" }) {
-  const list = [...CLIENTS, ...CLIENTS];
+  const { data: CLIENTS } = useContent("clients", MOCK);
+  const source = CLIENTS && CLIENTS.length ? CLIENTS : [];
+  const list = [...source, ...source];
   return (
     <section className="py-14 bg-white">
       <div className="container-x">

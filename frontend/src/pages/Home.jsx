@@ -10,7 +10,8 @@ import SectionHeader from "../components/common/SectionHeader";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import TestimonialsCarousel from "../components/common/TestimonialsCarousel";
 import CTABanner from "../components/common/CTABanner";
-import { SERVICES, SOLUTIONS, PUBLICATIONS, PUBLISHERS, EDUCATION_PROGRAMS, SITE } from "../data/mock";
+import { SERVICES as MOCK_SERVICES, SOLUTIONS as MOCK_SOLUTIONS, PUBLICATIONS as MOCK_PUBS, PUBLISHERS } from "../data/mock";
+import useContent from "../hooks/useContent";
 
 const iconMap = { Dna, BarChart3, Users, GraduationCap, Cpu, Cloud, Terminal, Briefcase, BookOpen, Presentation };
 
@@ -29,8 +30,12 @@ function ServiceCard({ s, i }) {
 }
 
 export default function Home() {
+  const { data: SERVICES } = useContent("services", MOCK_SERVICES);
+  const { data: SOLUTIONS } = useContent("solutions", MOCK_SOLUTIONS);
+  const { data: PUBLICATIONS } = useContent("publications", MOCK_PUBS);
   const solutionIcons = { "genome-station": Cpu, gstack: Cloud, sqit: Terminal };
-  const latestPubs = PUBLICATIONS.slice(0, 3);
+  const latestPubs = (PUBLICATIONS || []).slice(0, 3);
+  const homeSolutions = (SOLUTIONS || []).filter((s) => ["genome-station", "gstack", "sqit"].includes(s.slug));
 
   return (
     <>
@@ -79,7 +84,7 @@ export default function Home() {
         <div className="container-x">
           <SectionHeader eyebrow="Our Services" title="What We" accent="Offer" description="End-to-end genomics services powered by advanced technologies and scientific expertise." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {SERVICES.map((s, i) => <ServiceCard key={s.slug} s={s} i={i} />)}
+            {(SERVICES || []).map((s, i) => <ServiceCard key={s.slug} s={s} i={i} />)}
           </div>
         </div>
       </section>
@@ -89,7 +94,7 @@ export default function Home() {
         <div className="container-x">
           <SectionHeader eyebrow="Our Genomics Solutions" title="Purpose-built for" accent="Research Labs" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {SOLUTIONS.map((s, i) => {
+            {homeSolutions.map((s, i) => {
               const Icon = solutionIcons[s.slug] || Dna;
               return (
                 <motion.div key={s.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="group bg-white border border-gray-100 hover:border-green-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all">

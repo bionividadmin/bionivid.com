@@ -4,10 +4,13 @@ import { Helmet } from "react-helmet-async";
 import { Phone, Mail, MapPin, Send, Building2, MessageSquare } from "lucide-react";
 import PageHero from "../components/common/PageHero";
 import { Button } from "../components/ui/button";
-import { SITE } from "../data/mock";
+import { SITE as MOCK_SITE } from "../data/mock";
 import { submitContact } from "../lib/api";
+import useContent from "../hooks/useContent";
 
 export default function Contact() {
+  const { data: siteData } = useContent("site", MOCK_SITE);
+  const SITE = { ...MOCK_SITE, ...(siteData || {}) };
   const [form, setForm] = useState({ name: "", email: "", org: "", phone: "", subject: "", message: "" });
   const [status, setStatus] = useState(null);
 

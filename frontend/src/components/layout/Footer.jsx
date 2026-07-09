@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Twitter, Linkedin, Facebook, Instagram, Youtube, Phone, Mail, MapPin, Dna } from "lucide-react";
-import { SITE, FOOTER_LINKS } from "../../data/mock";
+import { SITE as MOCK_SITE, FOOTER_LINKS } from "../../data/mock";
 import { subscribeNewsletter } from "../../lib/api";
+import useContent from "../../hooks/useContent";
 
 export default function Footer() {
+  const { data: siteData } = useContent("site", MOCK_SITE);
+  const SITE = { ...MOCK_SITE, ...(siteData || {}) };
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 

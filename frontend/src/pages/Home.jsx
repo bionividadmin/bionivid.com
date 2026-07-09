@@ -102,7 +102,11 @@ export default function Home() {
                       <h3 className="text-lg font-semibold text-gray-900">{s.title}</h3>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">{s.description}</p>
-                    <Link to={`/genomics-solutions#${s.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <ArrowRight className="w-4 h-4" /></Link>
+                    {s.slug === "sqit" ? (
+                      <a href="https://sqit.online" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <ArrowRight className="w-4 h-4" /></a>
+                    ) : (
+                      <Link to={`/genomics-solutions#${s.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <ArrowRight className="w-4 h-4" /></Link>
+                    )}
                   </div>
                 </motion.div>
               );
@@ -117,16 +121,16 @@ export default function Home() {
           <div aria-hidden className="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">Powered by NiviLabs</span>
-              <h2 className="text-white text-3xl md:text-4xl font-bold font-display leading-tight">Explore our cloud genomics analytics platform</h2>
-              <p className="text-green-50/90 mt-3 max-w-lg">NiviLabs delivers secure, scalable and collaborative genomics analysis — anywhere, anytime. No installation, no compromises.</p>
+              <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">A Bionivid Product</span>
+              <h2 className="text-white text-3xl md:text-4xl font-bold font-display leading-tight">niviLabs — Premium reagents, engineered for reproducibility.</h2>
+              <p className="text-green-50/90 mt-3 max-w-lg">Browse our catalog of high-quality enzymes, kits, reagents, consumables and lab instruments — backed by a seamless one-click RFQ system.</p>
               <Button asChild size="lg" className="mt-6 bg-white text-green-700 hover:bg-green-50 rounded-full px-6">
-                <Link to="/genomics-solutions#nivilabs">Explore NiviLabs <ArrowRight className="w-4 h-4 ml-1" /></Link>
+                <a href="https://nivilabs.bionivid.com" target="_blank" rel="noopener noreferrer">Visit niviLabs <ArrowRight className="w-4 h-4 ml-1" /></a>
               </Button>
             </div>
             <div className="hidden md:flex justify-end">
               <div className="grid grid-cols-2 gap-3">
-                {["Secure Cloud", "Real-time Collab", "Automated Pipelines", "HPC Ready"].map((f) => (
+                {["Enzymes", "Reagents", "Extraction Kits", "Consumables"].map((f) => (
                   <div key={f} className="bg-white/10 backdrop-blur border border-white/15 rounded-xl p-4">
                     <CheckCircle2 className="w-5 h-5 text-green-200 mb-2" />
                     <p className="text-sm text-white font-medium">{f}</p>

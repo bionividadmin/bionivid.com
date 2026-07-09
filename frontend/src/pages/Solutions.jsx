@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ShieldCheck, Cloud, ArrowRight, MessageSquare, Cpu, Terminal, CheckCircle2, Globe, Server, FileSearch, Rocket, Dna, FlaskConical, Droplets, Package, Beaker, ChevronRight, Sparkles, Target, Compass } from "lucide-react";
+import { ShieldCheck, Cloud, ArrowRight, MessageSquare, Cpu, Terminal, CheckCircle2, Globe, Server, FileSearch, FlaskConical, Droplets, Package, Beaker, Sparkles, Target, Compass } from "lucide-react";
 import PageHero from "../components/common/PageHero";
 import SectionHeader from "../components/common/SectionHeader";
 import CTABanner from "../components/common/CTABanner";
@@ -13,7 +13,6 @@ import { SOLUTIONS, NIVILABS, SQIT_ONLINE } from "../data/mock";
 
 const slugIcons = { "genome-station": Cpu, gstack: Cloud, sqit: Terminal };
 const catIcons = { FlaskConical, Droplets, Package, Beaker };
-const whyIcons = { Dna, ShieldCheck, Rocket };
 
 export default function Solutions() {
   return (
@@ -31,7 +30,6 @@ export default function Solutions() {
         image="https://images.pexels.com/photos/6248959/pexels-photo-6248959.jpeg"
         actions={<>
           <Button asChild className="bg-green-600 hover:bg-green-700 rounded-full px-6"><Link to="/contact"><MessageSquare className="w-4 h-4 mr-1" />Talk to Our Team</Link></Button>
-          <Button asChild variant="outline" className="rounded-full px-6 border-gray-200"><a href="#nivilabs">Explore NiviLabs <ChevronRight className="w-4 h-4 ml-1" /></a></Button>
         </>}
       />
 
@@ -190,99 +188,6 @@ export default function Solutions() {
                   })}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Categories */}
-        <div className="container-x py-14 md:py-16">
-          <SectionHeader eyebrow="Shop by" title="Product" accent="Categories" description="High-purity molecular biology products across the full research workflow." />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {NIVILABS.categories.map((c, i) => {
-              const Icon = catIcons[c.icon] || FlaskConical;
-              return (
-                <motion.a key={c.title} href={NIVILABS.url} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="group bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-green-200 transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-green-100 text-green-700 flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors"><Icon className="w-5 h-5" /></div>
-                  <h3 className="font-bold text-gray-900">{c.title}</h3>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {c.tags.map((t) => (<span key={t} className="text-[11px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{t}</span>))}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3 leading-relaxed">{c.body}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Explore <ArrowRight className="w-4 h-4" /></span>
-                </motion.a>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Featured products */}
-        <div className="bg-green-50/60 py-14 md:py-16">
-          <div className="container-x">
-            <SectionHeader eyebrow="Most Requested" title="Featured" accent="Products" description="A curated selection of high-performance products across DNA/RNA extraction, ladders and NGS library prep." />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {NIVILABS.featured.map((p, i) => (
-                <motion.article key={p.name} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-green-200 transition-all flex flex-col">
-                  <span className="inline-flex w-fit items-center gap-1 bg-green-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full mb-3"><Sparkles className="w-3 h-3" /> Featured</span>
-                  <h4 className="font-semibold text-gray-900 leading-snug">{p.name}</h4>
-                  <p className="text-xs text-gray-600 mt-2 leading-relaxed line-clamp-5 flex-1">{p.body}</p>
-                  <a href={NIVILABS.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:gap-2 transition-all">Request Quote <ArrowRight className="w-3.5 h-3.5" /></a>
-                </motion.article>
-              ))}
-            </div>
-            <div className="text-center mt-8">
-              <Button asChild variant="outline" className="rounded-full px-6 border-green-300 text-green-700 hover:bg-green-50"><a href={NIVILABS.url} target="_blank" rel="noopener noreferrer">View All Products <ArrowRight className="w-4 h-4 ml-1" /></a></Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Why choose */}
-        <div className="container-x py-14 md:py-16">
-          <SectionHeader eyebrow="Why choose niviLabs?" title="Built by Biologists," accent="for Biologists" description="Born from a decade of pioneering genomic research, our reagents are developed and validated by scientists, for scientists." />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {NIVILABS.whyChoose.map((w, i) => {
-              const Icon = whyIcons[w.icon] || Dna;
-              return (
-                <motion.div key={w.title} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-white border border-gray-100 rounded-2xl p-6 md:p-7 hover:shadow-lg hover:border-green-200 transition-all">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center mb-4"><Icon className="w-6 h-6" /></div>
-                  <h3 className="font-bold text-gray-900 text-lg">{w.title}</h3>
-                  <p className="text-sm text-gray-600 mt-2 leading-relaxed">{w.body}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* New arrivals */}
-        <div className="bg-green-50/60 py-14 md:py-16">
-          <div className="container-x">
-            <SectionHeader eyebrow="Just Landed" title="New" accent="Arrivals" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {NIVILABS.newArrivals.map((p, i) => (
-                <motion.div key={p.name + i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all">
-                  <span className="inline-flex w-fit items-center gap-1 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full mb-3">New</span>
-                  <h4 className="font-semibold text-gray-900 leading-snug">{p.name}</h4>
-                  <p className="text-sm text-gray-600 mt-2 leading-relaxed">{p.body}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Speak with our Scientist Team */}
-        <div className="container-x py-14 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            <div>
-              <SectionHeader align="left" eyebrow="Expert Guidance" title="Speak with our" accent="Scientist Team" />
-              <p className="text-sm text-gray-600 leading-relaxed">Struggling with a tough protocol or looking to optimize your workflow? Our team of molecular biology specialists is ready to support your research — from selecting the right tools to troubleshooting complex extractions, our scientists provide actionable, expert guidance at every stage of your project.</p>
-              <Button asChild className="mt-5 bg-green-600 hover:bg-green-700 rounded-full px-6"><Link to="/contact">Get in touch with a specialist <ArrowRight className="w-4 h-4 ml-1" /></Link></Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {NIVILABS.specialist.map((s) => (
-                <div key={s.title} className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-green-200 transition-colors">
-                  <h4 className="font-semibold text-gray-900 text-sm">{s.title}</h4>
-                  <p className="text-xs text-gray-600 mt-2 leading-relaxed">{s.body}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>

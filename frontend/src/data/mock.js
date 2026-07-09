@@ -92,12 +92,6 @@ export const SERVICES = [
     icon: "Users",
     short: "Expert support for research, publications and scientific consulting.",
   },
-  {
-    slug: "genome-education",
-    title: "The Genome Education",
-    icon: "GraduationCap",
-    short: "Bridging the gap between science and society through training and outreach.",
-  },
 ];
 
 export const SOLUTIONS = [

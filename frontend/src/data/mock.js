@@ -53,15 +53,15 @@ export const HERO_SLIDES = [
     ],
   },
   {
-    eyebrow: "Powered by NiviLabs",
-    titleTop: "Cloud Genomics",
-    titleAccent: "Made Simple",
-    titleBottom: "— Anywhere, Anytime",
-    body: "NiviLabs — our cloud-based genomics analytics platform for storage, sharing and collaborative analysis.",
+    eyebrow: "Powered by niviLabs",
+    titleTop: "Premium Reagents,",
+    titleAccent: "Engineered for",
+    titleBottom: "Reproducibility.",
+    body: "niviLabs — our in-house catalog of high-quality enzymes, kits, reagents, consumables and lab instruments, backed by a seamless one-click RFQ system.",
     image: "https://images.pexels.com/photos/25626587/pexels-photo-25626587.jpeg",
     ctas: [
-      { label: "Visit NiviLabs", href: "https://nivilabs.bionivid.com", primary: true },
-      { label: "Learn More", to: "/genomics-solutions", primary: false },
+      { label: "Browse Catalog", href: "https://nivilabs.bionivid.com", primary: true },
+      { label: "Request a Quote", to: "/contact", primary: false },
     ],
   },
 ];

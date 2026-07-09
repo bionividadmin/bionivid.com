@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Dna, Newspaper } from "lucide-react";
+import { Menu, X, ChevronDown, Dna } from "lucide-react";
 import { NAV } from "../../data/mock";
 import { Button } from "../ui/button";
 
@@ -63,9 +63,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline" className="hidden md:inline-flex rounded-full px-4 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-700">
-            <a href="https://bionivid.in/bionivid-gazette.pdf" target="_blank" rel="noopener noreferrer"><Newspaper className="w-4 h-4 mr-1" />Bionivid Gazette</a>
-          </Button>
           <Button asChild size="sm" className="hidden md:inline-flex bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
             <Link to="/contact">Get in Touch</Link>
           </Button>
@@ -96,10 +93,7 @@ export default function Navbar() {
                     )}
                   </div>
                 ))}
-                <div className="px-4 mt-4 space-y-2">
-                  <Button asChild variant="outline" className="w-full rounded-full border-green-200 text-green-700 hover:bg-green-50">
-                    <a href="https://bionivid.in/bionivid-gazette.pdf" target="_blank" rel="noopener noreferrer"><Newspaper className="w-4 h-4 mr-1" />Bionivid Gazette</a>
-                  </Button>
+                <div className="px-4 mt-4">
                   <Button asChild className="w-full bg-green-600 hover:bg-green-700 rounded-full">
                     <Link to="/contact">Get in Touch</Link>
                   </Button>

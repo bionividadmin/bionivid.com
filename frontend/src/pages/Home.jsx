@@ -121,7 +121,7 @@ export default function Home() {
               <h2 className="text-white text-3xl md:text-4xl font-bold font-display leading-tight">Explore our cloud genomics analytics platform</h2>
               <p className="text-green-50/90 mt-3 max-w-lg">NiviLabs delivers secure, scalable and collaborative genomics analysis — anywhere, anytime. No installation, no compromises.</p>
               <Button asChild size="lg" className="mt-6 bg-white text-green-700 hover:bg-green-50 rounded-full px-6">
-                <a href={SITE.nivilabsUrl} target="_blank" rel="noopener noreferrer">Visit NiviLabs <ArrowRight className="w-4 h-4 ml-1" /></a>
+                <Link to="/genomics-solutions#nivilabs">Explore NiviLabs <ArrowRight className="w-4 h-4 ml-1" /></Link>
               </Button>
             </div>
             <div className="hidden md:flex justify-end">
@@ -169,32 +169,6 @@ export default function Home() {
               <span key={p} className="text-gray-500 font-semibold text-sm md:text-base tracking-wide hover:text-green-700 transition-colors">{p}</span>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* The Genome Education */}
-      <section className="section-y bg-gradient-to-b from-green-50/40 to-white">
-        <div className="container-x grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div>
-            <SectionHeader align="left" eyebrow="The Genome Education" title="Bridging science and" accent="society" description="Training the next generation of genomics researchers through structured programs." />
-            <ul className="space-y-3">
-              {EDUCATION_PROGRAMS.map((p) => {
-                const Icon = iconMap[p.icon] || GraduationCap;
-                return (
-                  <li key={p.id} className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-green-100 text-green-700 flex items-center justify-center shrink-0"><Icon className="w-4 h-4" /></div>
-                    <span className="font-medium text-gray-800">{p.title}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            <Button asChild className="mt-6 bg-green-600 hover:bg-green-700 rounded-full"><Link to="/education">Explore Programs <ArrowRight className="w-4 h-4 ml-1" /></Link></Button>
-          </div>
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative">
-            <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5">
-              <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655" alt="Genome Education classroom" className="w-full h-full object-cover" loading="lazy" />
-            </div>
-          </motion.div>
         </div>
       </section>
 

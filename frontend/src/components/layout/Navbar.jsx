@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Search, Dna } from "lucide-react";
-import { NAV, SITE } from "../../data/mock";
+import { Menu, X, ChevronDown, Dna } from "lucide-react";
+import { NAV } from "../../data/mock";
 import { Button } from "../ui/button";
 
 const Logo = () => (
@@ -18,7 +18,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [showSearch, setShowSearch] = useState(false);
   const loc = useLocation();
 
   useEffect(() => {
@@ -64,32 +63,14 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <button aria-label="Search" onClick={() => setShowSearch((s) => !s)} className="hidden md:inline-flex w-9 h-9 items-center justify-center rounded-full hover:bg-gray-100 text-gray-600">
-            <Search className="w-4 h-4" />
-          </button>
           <Button asChild size="sm" className="hidden md:inline-flex bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
-            <a href={SITE.nivilabsUrl} target="_blank" rel="noopener noreferrer">NiviLabs</a>
+            <Link to="/contact">Get in Touch</Link>
           </Button>
           <button aria-label="Menu" onClick={() => setOpen(true)} className="lg:hidden w-10 h-10 inline-flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100">
             <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
-
-      {/* Search bar dropdown */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-gray-100 bg-white">
-            <div className="container-x py-4">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-full px-4 py-3">
-                <Search className="w-4 h-4 text-gray-400" />
-                <input autoFocus placeholder="Search publications, services, solutions..." className="flex-1 bg-transparent outline-none text-sm" />
-                <button onClick={() => setShowSearch(false)} className="text-gray-500 text-xs">Close</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Mobile drawer */}
       <AnimatePresence>
@@ -114,7 +95,7 @@ export default function Navbar() {
                 ))}
                 <div className="px-4 mt-4">
                   <Button asChild className="w-full bg-green-600 hover:bg-green-700 rounded-full">
-                    <a href={SITE.nivilabsUrl} target="_blank" rel="noopener noreferrer">Visit NiviLabs</a>
+                    <Link to="/contact">Get in Touch</Link>
                   </Button>
                 </div>
               </div>

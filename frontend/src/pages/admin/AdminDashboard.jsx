@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dna, LogOut, LayoutDashboard, FileText, Users, MessageSquare, Image as ImageIcon, Newspaper, Award, Beaker, Cog, Building2, Mail, Search, Plus, Pencil, Trash2, Save, X, RefreshCw, ChevronRight, Upload } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useAuth } from "../../context/AuthContext";
-import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries, adminGetHomeAbout, adminUpdateHomeAbout, uploadFile, assetUrl } from "../../lib/api";
+import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries, adminGetHomeAbout, adminUpdateHomeAbout, adminGetAboutSection, adminUpdateAboutSection, uploadFile, assetUrl } from "../../lib/api";
 
 // -------------------- Resource registry ----------------
 const RESOURCES = [
   { key: "site", label: "Site Settings", icon: Cog, singleton: true, group: "Global" },
   { key: "about-galleries", label: "About Galleries", icon: ImageIcon, singleton: true, group: "Global" },
+  { key: "about-section", label: "Who Are We", icon: FileText, singleton: true, group: "About" },
   { key: "hero-slides", label: "Hero Slides", icon: LayoutDashboard, group: "Home", primary: ["eyebrow", "titleAccent", "order"] },
   { key: "home-about", label: "Home About", icon: FileText, singleton: true, group: "Home" },
   { key: "stats", label: "Stats", icon: Award, group: "Home", primary: ["value", "label", "order"] },
@@ -250,6 +251,95 @@ function HomeAboutEditor({ value = {}, onChange }) {
   );
 }
 
+function AboutSectionEditor({ value = {}, onChange }) {
+  const section = useMemo(() => ({
+    eyebrow: "",
+    titleTop: "",
+    titleAccent: "",
+    descriptions: ["", "", ""],
+    images: [],
+    mainImageIndex: 0,
+    ...value,
+    descriptions: value?.descriptions || ["", "", ""],
+    images: value?.images || [],
+  }), [value]);
+
+  const update = (updater) => {
+    const next = typeof updater === "function" ? updater(section) : { ...section, ...updater };
+    onChange(next);
+  };
+
+  const setDescription = (index, val) => {
+    update((prev) => {
+      const descriptions = [...(prev.descriptions || [])];
+      descriptions[index] = val;
+      return { ...prev, descriptions };
+    });
+  };
+
+  const setImageField = (index, key, val) => {
+    update((prev) => {
+      const images = [...(prev.images || [])];
+      images[index] = { ...(images[index] || {}), [key]: val };
+      return { ...prev, images };
+    });
+  };
+
+  const images = [...(section.images || [])];
+  while (images.length < 3) images.push({ src: "", alt: "" });
+
+  const descriptions = [...(section.descriptions || [])];
+  while (descriptions.length < 3) descriptions.push("");
+
+  return (
+    <div className="space-y-4 border border-gray-200 rounded-2xl p-4 bg-gray-50">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">eyebrow</label>
+          <input value={section.eyebrow ?? ""} onChange={(e) => update({ eyebrow: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">titleTop</label>
+          <input value={section.titleTop ?? ""} onChange={(e) => update({ titleTop: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">titleAccent</label>
+          <input value={section.titleAccent ?? ""} onChange={(e) => update({ titleAccent: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {descriptions.map((text, index) => (
+          <div key={index}>
+            <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Description {index + 1}</label>
+            <textarea rows={3} value={text} onChange={(e) => setDescription(index, e.target.value)} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-3">
+        {images.map((img, index) => (
+          <div key={index} className="rounded-2xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Image {index + 1}</div>
+                <div className="text-xs text-gray-400">Upload a URL or file</div>
+              </div>
+              <label className="text-[11px] text-gray-500 inline-flex items-center gap-2">
+                <input type="radio" checked={section.mainImageIndex === index} onChange={() => update({ mainImageIndex: index })} />
+                Main
+              </label>
+            </div>
+            <ImageField name={`src`} value={img.src} onChange={(src) => setImageField(index, "src", src)} />
+            <div className="mt-3">
+              <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">alt</label>
+              <input value={img.alt ?? ""} onChange={(e) => setImageField(index, "alt", e.target.value)} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // -------------------- Main dashboard --------------------
 export default function AdminDashboard() {
   const { admin, loading: authLoading, logout } = useAuth();
@@ -275,6 +365,7 @@ export default function AdminDashboard() {
         if (active.key === "site") d = await adminGetSite();
         else if (active.key === "about-galleries") d = await adminGetGalleries();
         else if (active.key === "home-about") d = await adminGetHomeAbout();
+        else if (active.key === "about-section") d = await adminGetAboutSection();
         setSingleton(d);
         setItems([]);
       } else {
@@ -320,7 +411,9 @@ export default function AdminDashboard() {
             ? adminUpdateGalleries
             : active.key === "home-about"
               ? adminUpdateHomeAbout
-              : null;
+              : active.key === "about-section"
+                ? adminUpdateAboutSection
+                : null;
         if (!fn) throw new Error("Unknown singleton save target");
         const saved = await fn(doc);
         setSingleton(saved);
@@ -420,9 +513,13 @@ export default function AdminDashboard() {
           {active?.singleton && (
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               {loading ? <div className="text-sm text-gray-500">Loading...</div> : (
-                active.key === "home-about" ? (
+                active.key === "home-about" || active.key === "about-section" ? (
                   <div className="space-y-6">
-                    <HomeAboutEditor value={singleton || {}} onChange={setSingleton} />
+                    {active.key === "about-section" ? (
+                      <AboutSectionEditor value={singleton || {}} onChange={setSingleton} />
+                    ) : (
+                      <HomeAboutEditor value={singleton || {}} onChange={setSingleton} />
+                    )}
                     <div className="flex items-center justify-end gap-2">
                       <Button type="button" variant="outline" onClick={() => loadList()} className="rounded-full"><X className="w-4 h-4 mr-1" />Cancel</Button>
                       <Button type="button" disabled={saving} onClick={() => doSave(singleton)} className="bg-green-600 hover:bg-green-700 rounded-full"><Save className="w-4 h-4 mr-1" />{saving ? "Saving..." : "Save"}</Button>

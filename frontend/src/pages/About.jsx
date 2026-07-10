@@ -10,7 +10,8 @@ import CTABanner from "../components/common/CTABanner";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import ImageSlider from "../components/common/ImageSlider";
 import { Button } from "../components/ui/button";
-import { VALUES as MOCK_VALUES, LEADERSHIP as MOCK_LEAD, ABOUT_GALLERIES as MOCK_GAL } from "../data/mock";
+import { VALUES as MOCK_VALUES, LEADERSHIP as MOCK_LEAD, ABOUT_GALLERIES as MOCK_GAL, ABOUT_SECTION as MOCK_ABOUT_SECTION } from "../data/mock";
+import { assetUrl } from "../lib/api";
 import useContent from "../hooks/useContent";
 
 const valueIcons = { Handshake, Trophy, Users, BadgeCheck };
@@ -19,9 +20,17 @@ export default function About() {
   const { data: VALUES } = useContent("values", MOCK_VALUES);
   const { data: LEADERSHIP } = useContent("leadership", MOCK_LEAD);
   const { data: galleriesData } = useContent("about-galleries", MOCK_GAL);
+  const { data: aboutSection } = useContent("about-section", MOCK_ABOUT_SECTION);
   const ABOUT_GALLERIES = galleriesData || MOCK_GAL;
   const valuesList = VALUES || [];
   const leaders = LEADERSHIP || [];
+  const section = aboutSection || MOCK_ABOUT_SECTION;
+  const mainAboutIndex = Number.isInteger(section?.mainImageIndex)
+    ? Math.min(Math.max(0, section.mainImageIndex), (section.images || []).length - 1)
+    : 0;
+  const mainImage = (section.images || [])[mainAboutIndex] || (section.images || [])[0] || {};
+  const secondaryImages = (section.images || []).filter((_, idx) => idx !== mainAboutIndex).slice(0, 2);
+  const details = (section.descriptions || []).filter(Boolean).slice(0, 3);
   return (
     <>
       <Helmet>
@@ -41,23 +50,38 @@ export default function About() {
         </>}
       />
 
-      <div className="container-x -mt-10 md:-mt-14 relative z-10"><StatsBar /></div>
+      {/* <div className="container-x -mt-10 md:-mt-14 relative z-10"><StatsBar /></div> */}
 
       {/* Who we are */}
-      <section className="section-y">
-        <div className="container-x grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+      <section id="who-we-are" className="section-y">
+        <div className="container-x grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
-            <SectionHeader align="left" eyebrow="Who We Are" title="About" accent="Bionivid" />
+            <SectionHeader align="left" eyebrow={section?.eyebrow} title={section?.titleTop} accent={section?.titleAccent} />
             <div className="space-y-4 text-gray-600 leading-relaxed text-[15px]">
-              <p><strong className="text-gray-900">Bionivid</strong> is your trusted research partner for genomics and NGS application-based data analytics. Our mission is to actively collaborate on your research, providing timely solutions and scientific insights.</p>
-              <p>As pioneers in advanced bioinformatics software (SQIT) and cutting-edge hardware (Genome Station), we offer tailored solutions for genomics research projects. Leveraging our extensive genomics expertise, we've developed specialized NGS analysis pipelines to support life sciences and biotechnology researchers.</p>
-              <p>As a research collaborator, you will have transparent access to in-house developed protocols, commercial kits, and reagents required for major projects in genomics, transcriptomics, metagenomics, and other omics applications. Our end-to-end research collaboration covers every step — from sample preparation and library generation to sequencing and data analysis. We also offer comprehensive project design consultation, including wet lab support.</p>
+              {details.map((text, index) => (
+                <p key={index}>{text}</p>
+              ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <img src="https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg" alt="Office building" className="col-span-2 aspect-[16/9] w-full object-cover rounded-2xl" />
-            <img src="https://images.pexels.com/photos/8533087/pexels-photo-8533087.jpeg" alt="Lab interior" className="aspect-[4/3] w-full object-cover rounded-2xl" />
-            <img src="https://images.pexels.com/photos/12903168/pexels-photo-12903168.jpeg" alt="Team meeting" className="aspect-[4/3] w-full object-cover rounded-2xl" />
+          <div className="grid gap-3">
+            <div className="overflow-hidden rounded-3xl bg-gray-100 shadow-sm">
+              {mainImage?.src ? (
+                <img src={assetUrl(mainImage.src)} alt={mainImage.alt || "Main about image"} className="w-full h-full min-h-[300px] object-cover" />
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-gray-400">No main image selected</div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {secondaryImages.map((img, index) => (
+                <div key={index} className="overflow-hidden rounded-3xl bg-gray-100 shadow-sm h-40">
+                  {img?.src ? (
+                    <img src={assetUrl(img.src)} alt={img.alt || `About image ${index + 1}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-400">No image</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

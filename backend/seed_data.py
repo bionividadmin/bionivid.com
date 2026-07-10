@@ -32,12 +32,30 @@ HOME_ABOUT = {
     "description": "Bionivid is your trusted research partner for genomics and NGS application-based data analytics. Our mission is to actively collaborate on your research, providing timely solutions and scientific insights.",
     "descriptionSecondary": "With advanced bioinformatics software (SQIT) and cutting-edge hardware (Genome Station), we offer tailored solutions for research projects, leveraging our extensive genomics expertise.",
     "ctas": [
-        {"label": "Learn More About Us", "to": "/about", "primary": True}
+        {"label": "Learn More About Us", "to": "/about#who-we-are", "primary": True}
     ],
     "images": [
         {"src": "https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg", "alt": "Bionivid Office"},
         {"src": "https://images.pexels.com/photos/8533087/pexels-photo-8533087.jpeg", "alt": "Lab"},
         {"src": "https://images.pexels.com/photos/5945799/pexels-photo-5945799.jpeg", "alt": "Team"}
+    ],
+    "mainImageIndex": 0,
+}
+
+ABOUT_SECTION = {
+    "id": "main",
+    "eyebrow": "Who We Are",
+    "titleTop": "About",
+    "titleAccent": "Bionivid",
+    "descriptions": [
+        "Bionivid is your trusted research partner for genomics and NGS application-based data analytics. Our mission is to actively collaborate on your research, providing timely solutions and scientific insights.",
+        "As pioneers in advanced bioinformatics software (SQIT) and cutting-edge hardware (Genome Station), we offer tailored solutions for genomics research projects. Leveraging our extensive genomics expertise, we've developed specialized NGS analysis pipelines to support life sciences and biotechnology researchers.",
+        "As a research collaborator, you will have transparent access to in-house developed protocols, commercial kits, and reagents required for major projects in genomics, transcriptomics, metagenomics, and other omics applications. Our end-to-end research collaboration covers every step — from sample preparation and library generation to sequencing and data analysis.",
+    ],
+    "images": [
+        {"src": "https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg", "alt": "Office building"},
+        {"src": "https://images.pexels.com/photos/8533087/pexels-photo-8533087.jpeg", "alt": "Lab interior"},
+        {"src": "https://images.pexels.com/photos/12903168/pexels-photo-12903168.jpeg", "alt": "Team meeting"}
     ],
     "mainImageIndex": 0,
 }

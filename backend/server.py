@@ -157,6 +157,7 @@ async def on_startup():
         await _seed_singleton("site_settings", seed.SITE)
         await _seed_singleton("about_galleries", seed.ABOUT_GALLERIES)
         await _seed_singleton("home_about", seed.HOME_ABOUT)
+        await _seed_singleton("about_section", seed.ABOUT_SECTION)
         await _seed_collection("hero_slides", seed.HERO_SLIDES)
         await _seed_collection("stats", seed.STATS)
         await _seed_collection("services", seed.SERVICES)
@@ -262,6 +263,12 @@ async def get_home_about():
     return clean(doc) or {}
 
 
+@api.get("/content/about-section")
+async def get_about_section():
+    doc = await db["about_section"].find_one({"id": "main"})
+    return clean(doc) or {}
+
+
 @api.get("/content/{resource}")
 async def list_public(resource: str, q: Optional[str] = None):
     meta = _res(resource)
@@ -345,6 +352,19 @@ async def admin_put_home_about(body: dict):
     return clean(await db["home_about"].find_one({"id": "main"}))
 
 
+@api.get("/admin/about-section", dependencies=[Depends(require_admin)])
+async def admin_get_about_section():
+    return clean(await db["about_section"].find_one({"id": "main"})) or {}
+
+
+@api.put("/admin/about-section", dependencies=[Depends(require_admin)])
+async def admin_put_about_section(body: dict):
+    body["id"] = "main"
+    body["updated_at"] = now_iso()
+    await db["about_section"].update_one({"id": "main"}, {"$set": body}, upsert=True)
+    return clean(await db["about_section"].find_one({"id": "main"}))
+
+
 @api.get("/admin/{resource}", dependencies=[Depends(require_admin)])
 async def admin_list(resource: str, q: Optional[str] = None, limit: int = 500):
     meta = _res(resource)
@@ -404,7 +424,7 @@ app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads"
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=["https://proxy.bionivid.in", "http://localhost:3000"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

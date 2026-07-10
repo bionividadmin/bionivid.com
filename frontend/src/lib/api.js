@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API_BASE = `${BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL?.replace(/\/+$/, "") || "";
+export const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
 
 export const TOKEN_KEY = "bionivid_admin_token";
 
@@ -11,13 +11,13 @@ export const api = axios.create({
   timeout: 20000,
 });
 
-// Convert relative /api/uploads/... paths to absolute URLs (leaves absolute URLs alone).
+// Convert relative paths into absolute backend URLs; leave fully-qualified URLs alone.
 export function assetUrl(u) {
   if (!u) return u;
   if (typeof u !== "string") return u;
   if (/^https?:\/\//i.test(u)) return u;
-  if (u.startsWith("/")) return `${BACKEND_URL}${u}`;
-  return u;
+  const trimmed = u.replace(/^\/+/, "");
+  return BACKEND_URL ? `${BACKEND_URL}/${trimmed}` : u;
 }
 
 // Upload a file (admin only). Returns { url: "/api/uploads/xxx.png", filename, size }.
@@ -55,6 +55,7 @@ api.interceptors.response.use(
 export const fetchContent = (resource) => api.get(`/content/${resource}`).then((r) => r.data);
 export const fetchSite = () => api.get("/content/site").then((r) => r.data);
 export const fetchGalleries = () => api.get("/content/about-galleries").then((r) => r.data);
+export const fetchAboutSection = () => api.get("/content/about-section").then((r) => r.data);
 export const submitContact = (body) => api.post("/contact", body).then((r) => r.data);
 export const subscribeNewsletter = (body) => api.post("/newsletter", body).then((r) => r.data);
 
@@ -81,3 +82,5 @@ export const adminGetGalleries = () => api.get("/admin/about-galleries").then((r
 export const adminUpdateGalleries = (body) => api.put("/admin/about-galleries", body).then((r) => r.data);
 export const adminGetHomeAbout = () => api.get("/admin/home-about").then((r) => r.data);
 export const adminUpdateHomeAbout = (body) => api.put("/admin/home-about", body).then((r) => r.data);
+export const adminGetAboutSection = () => api.get("/admin/about-section").then((r) => r.data);
+export const adminUpdateAboutSection = (body) => api.put("/admin/about-section", body).then((r) => r.data);

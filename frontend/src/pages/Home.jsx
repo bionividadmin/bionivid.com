@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
-import { ArrowRight, Dna, BarChart3, Users, GraduationCap, Cpu, Cloud, Terminal, Briefcase, BookOpen, Presentation, CheckCircle2 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { Button } from "../components/ui/button";
 import HomeHero from "../components/home/HomeHero";
 import StatsBar from "../components/common/StatsBar";
@@ -14,10 +14,8 @@ import { assetUrl } from "../lib/api";
 import { SERVICES as MOCK_SERVICES, SOLUTIONS as MOCK_SOLUTIONS, PUBLICATIONS as MOCK_PUBS, PUBLISHERS, HOME_ABOUT as MOCK_HOME_ABOUT } from "../data/mock";
 import useContent from "../hooks/useContent";
 
-const iconMap = { Dna, BarChart3, Users, GraduationCap, Cpu, Cloud, Terminal, Briefcase, BookOpen, Presentation };
-
 function ServiceCard({ s, i }) {
-  const Icon = iconMap[s.icon] || Dna;
+  const Icon = LucideIcons[s.icon] || LucideIcons.Dna;
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="group relative bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 hover:border-green-200 transition-all">
       <div className="w-14 h-14 rounded-xl bg-green-50 group-hover:bg-green-100 flex items-center justify-center mb-4 transition-colors">
@@ -25,7 +23,7 @@ function ServiceCard({ s, i }) {
       </div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{s.title}</h3>
       <p className="text-sm text-gray-600 leading-relaxed">{s.short}</p>
-      <Link to="/genomics-services" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Know More <ArrowRight className="w-4 h-4" /></Link>
+      <Link to="/genomics-services" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Know More <LucideIcons.ArrowRight className="w-4 h-4" /></Link>
     </motion.div>
   );
 }
@@ -35,7 +33,11 @@ export default function Home() {
   const { data: SOLUTIONS } = useContent("solutions", MOCK_SOLUTIONS);
   const { data: PUBLICATIONS } = useContent("publications", MOCK_PUBS);
   const { data: homeAbout } = useContent("home-about", MOCK_HOME_ABOUT);
-  const solutionIcons = { "genome-station": Cpu, gstack: Cloud, sqit: Terminal };
+  const solutionIcons = {
+    "genome-station": LucideIcons.Cpu,
+    gstack: LucideIcons.Cloud,
+    sqit: LucideIcons.Terminal,
+  };
   const mainAboutIndex = Number.isInteger(homeAbout?.mainImageIndex)
     ? Math.min(Math.max(0, homeAbout.mainImageIndex), (homeAbout.images || []).length - 1)
     : 0;
@@ -85,11 +87,11 @@ export default function Home() {
               <div className="mt-6">
                 {primaryCta.href ? (
                   <a href={primaryCta.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-green-600 px-6 py-3 text-white text-sm font-medium hover:bg-green-700 transition">
-                    {primaryCta.label} <ArrowRight className="w-4 h-4" />
+                    {primaryCta.label} <LucideIcons.ArrowRight className="w-4 h-4" />
                   </a>
                 ) : (
                   <Button asChild size="lg" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6">
-                    <Link to={primaryCta.to || "/about"}>{primaryCta.label} <ArrowRight className="w-4 h-4 ml-1" /></Link>
+                    <Link to={primaryCta.to || "/about"}>{primaryCta.label} <LucideIcons.ArrowRight className="w-4 h-4 ml-1" /></Link>
                   </Button>
                 )}
               </div>
@@ -139,7 +141,7 @@ export default function Home() {
           <SectionHeader eyebrow="Our Genomics Solutions" title="Purpose-built for" accent="Research Labs" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {homeSolutions.map((s, i) => {
-              const Icon = solutionIcons[s.slug] || Dna;
+              const Icon = solutionIcons[s.slug] || LucideIcons.Dna;
               return (
                 <motion.div key={s.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="group bg-white border border-gray-100 hover:border-green-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
                   <div className="aspect-[16/10] bg-gradient-to-br from-green-50 to-green-100/40 flex items-center justify-center overflow-hidden">
@@ -152,9 +154,9 @@ export default function Home() {
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">{s.description}</p>
                     {s.slug === "sqit" ? (
-                      <a href="https://sqit.online" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <ArrowRight className="w-4 h-4" /></a>
+                      <a href="https://sqit.online" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <LucideIcons.ArrowRight className="w-4 h-4" /></a>
                     ) : (
-                      <Link to={`/genomics-solutions#${s.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <ArrowRight className="w-4 h-4" /></Link>
+                      <Link to={`/genomics-solutions#${s.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-700 group-hover:gap-2 transition-all">Learn More <LucideIcons.ArrowRight className="w-4 h-4" /></Link>
                     )}
                   </div>
                 </motion.div>
@@ -174,14 +176,14 @@ export default function Home() {
               <h2 className="text-white text-3xl md:text-4xl font-bold font-display leading-tight">niviLabs — Premium reagents, engineered for reproducibility.</h2>
               <p className="text-green-50/90 mt-3 max-w-lg">Browse our catalog of high-quality enzymes, kits, reagents, consumables and lab instruments — backed by a seamless one-click RFQ system.</p>
               <Button asChild size="lg" className="mt-6 bg-white text-green-700 hover:bg-green-50 rounded-full px-6">
-                <a href="https://nivilabs.bionivid.com" target="_blank" rel="noopener noreferrer">Visit niviLabs <ArrowRight className="w-4 h-4 ml-1" /></a>
+                <a href="https://nivilabs.bionivid.com" target="_blank" rel="noopener noreferrer">Visit niviLabs <LucideIcons.ArrowRight className="w-4 h-4 ml-1" /></a>
               </Button>
             </div>
             <div className="hidden md:flex justify-end">
               <div className="grid grid-cols-2 gap-3">
                 {["Enzymes", "Reagents", "Extraction Kits", "Consumables"].map((f) => (
                   <div key={f} className="bg-white/10 backdrop-blur border border-white/15 rounded-xl p-4">
-                    <CheckCircle2 className="w-5 h-5 text-green-200 mb-2" />
+                    <LucideIcons.CheckCircle2 className="w-5 h-5 text-green-200 mb-2" />
                     <p className="text-sm text-white font-medium">{f}</p>
                   </div>
                 ))}
@@ -202,7 +204,7 @@ export default function Home() {
               </div>
               <div className="text-5xl md:text-6xl font-extrabold font-display text-gray-900">250+</div>
               <p className="text-sm text-gray-600 mt-1 mb-5">Publications across leading journals</p>
-              <Button asChild className="bg-green-600 hover:bg-green-700 rounded-full"><Link to="/publications">View All Publications <ArrowRight className="w-4 h-4 ml-1" /></Link></Button>
+              <Button asChild className="bg-green-600 hover:bg-green-700 rounded-full"><Link to="/publications">View All Publications <LucideIcons.ArrowRight className="w-4 h-4 ml-1" /></Link></Button>
             </div>
             <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
               {latestPubs.map((p, i) => (
@@ -210,18 +212,12 @@ export default function Home() {
                   <div className="text-[11px] font-bold uppercase tracking-wider text-green-700">{p.publisher}</div>
                   <div className="mt-2 text-xs text-gray-500 border-b border-gray-100 pb-2">{p.publisher} | {p.year}</div>
                   <h4 className="mt-3 text-sm font-semibold text-gray-900 leading-snug line-clamp-4">{p.title}</h4>
-                  <a href={p.link} className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-green-700">Read More <ArrowRight className="w-3.5 h-3.5" /></a>
+                  <a href={p.link} className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-green-700">Read More <LucideIcons.ArrowRight className="w-3.5 h-3.5" /></a>
                 </motion.article>
               ))}
             </div>
           </div>
 
-          {/* Publishers strip */}
-          <div className="mt-10 rounded-2xl border border-gray-100 bg-white px-6 py-5 flex flex-wrap items-center justify-around gap-6">
-            {PUBLISHERS.map((p) => (
-              <span key={p} className="text-gray-500 font-semibold text-sm md:text-base tracking-wide hover:text-green-700 transition-colors">{p}</span>
-            ))}
-          </div>
         </div>
       </section>
 

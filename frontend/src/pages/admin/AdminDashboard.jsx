@@ -1,16 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dna, LogOut, LayoutDashboard, FileText, Users, MessageSquare, Image as ImageIcon, Newspaper, Award, Beaker, Cog, Building2, Mail, Search, Plus, Pencil, Trash2, Save, X, RefreshCw, ChevronRight, Upload } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useAuth } from "../../context/AuthContext";
-import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries, uploadFile, assetUrl } from "../../lib/api";
+import { adminList, adminCreate, adminUpdate, adminDelete, adminGetSite, adminUpdateSite, adminGetGalleries, adminUpdateGalleries, adminGetHomeAbout, adminUpdateHomeAbout, uploadFile, assetUrl } from "../../lib/api";
 
-// -------------------- Resource registry --------------------
+// -------------------- Resource registry ----------------
 const RESOURCES = [
   { key: "site", label: "Site Settings", icon: Cog, singleton: true, group: "Global" },
   { key: "about-galleries", label: "About Galleries", icon: ImageIcon, singleton: true, group: "Global" },
   { key: "hero-slides", label: "Hero Slides", icon: LayoutDashboard, group: "Home", primary: ["eyebrow", "titleAccent", "order"] },
+  { key: "home-about", label: "Home About", icon: FileText, singleton: true, group: "Home" },
   { key: "stats", label: "Stats", icon: Award, group: "Home", primary: ["value", "label", "order"] },
   { key: "services", label: "Services", icon: Beaker, group: "Home", primary: ["title", "slug", "order"] },
   { key: "solutions", label: "Solutions", icon: LayoutDashboard, group: "Solutions", primary: ["title", "slug", "order"] },
@@ -21,8 +22,8 @@ const RESOURCES = [
   { key: "clients", label: "Clients", icon: Building2, group: "Marketing", primary: ["name", "order"] },
   { key: "testimonials", label: "Testimonials", icon: MessageSquare, group: "Marketing", primary: ["name", "role", "order"] },
   { key: "publications", label: "Publications", icon: FileText, group: "Content", primary: ["year", "title", "publisher"] },
-  { key: "contact-submissions", label: "Contact Submissions", icon: Mail, group: "Inbox", readOnly: true, primary: ["name", "email", "subject", "created_at"] },
-  { key: "newsletter-subscribers", label: "Newsletter Subscribers", icon: Newspaper, group: "Inbox", readOnly: true, primary: ["email", "source", "created_at"] },
+  { key: "contact-submissions", label: "Contact Submissions", icon: Mail, group: "Inbox", readOnly: true, primary: ["name", "email", "subject"] },
+  { key: "newsletter-subscribers", label: "Newsletter Subscribers", icon: Newspaper, group: "Inbox", readOnly: true, primary: ["email", "source"] },
 ];
 
 // -------------------- Image upload field --------------------
@@ -81,6 +82,9 @@ function ImageField({ name, value, onChange }) {
 
 // -------------------- Field editor --------------------
 function FieldEditor({ name, value, onChange }) {
+  if (name === "homeAbout" && value && typeof value === "object" && !Array.isArray(value)) {
+    return <HomeAboutEditor value={value} onChange={onChange} />;
+  }
   if (isImageField(name, value) && (typeof value === "string" || value == null || value === undefined)) {
     return <ImageField name={name} value={value} onChange={onChange} />;
   }
@@ -133,16 +137,14 @@ function FieldEditor({ name, value, onChange }) {
   );
 }
 
-function ItemForm({ initial, onSave, onCancel, saving }) {
+function ItemForm({ initial, onSave, onCancel, saving, hideFields = [] }) {
   const [doc, setDoc] = useState(initial || {});
   useEffect(() => { setDoc(initial || {}); }, [initial]);
-  const fields = Object.keys(doc || {}).filter((k) => !/^_/.test(k));
+  const fields = Object.keys(doc || {})
+    .filter((k) => !/^(?:_|id|created_at|updated_at)$/.test(k))
+    .filter((k) => !hideFields.includes(k));
 
   const set = (k, v) => setDoc((d) => ({ ...d, [k]: v }));
-  const addField = () => {
-    const name = prompt("New field name?");
-    if (name && !(name in doc)) setDoc((d) => ({ ...d, [name]: "" }));
-  };
 
   return (
     <div className="space-y-3">
@@ -153,12 +155,96 @@ function ItemForm({ initial, onSave, onCancel, saving }) {
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <button type="button" onClick={addField} className="text-xs text-green-700 hover:underline">+ Add field</button>
+      <div className="flex items-center justify-end pt-3 border-t border-gray-100">
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onCancel} className="rounded-full"><X className="w-4 h-4 mr-1" />Cancel</Button>
           <Button type="button" disabled={saving} onClick={() => onSave(doc)} className="bg-green-600 hover:bg-green-700 rounded-full"><Save className="w-4 h-4 mr-1" />{saving ? "Saving..." : "Save"}</Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function HomeAboutEditor({ value = {}, onChange }) {
+  const about = useMemo(() => ({
+    eyebrow: "",
+    titleTop: "",
+    titleAccent: "",
+    titleBottom: "",
+    description: "",
+    descriptionSecondary: "",
+    images: [],
+    mainImageIndex: 0,
+    ...value,
+    images: value?.images || [],
+  }), [value]);
+
+  const update = (updater) => {
+    const next = typeof updater === "function" ? updater(about) : { ...about, ...updater };
+    onChange(next);
+  };
+
+  const setImageField = (index, key, val) => {
+    update((prev) => {
+      const images = [...(prev.images || [])];
+      images[index] = { ...(images[index] || {}), [key]: val };
+      return { ...prev, images };
+    });
+  };
+
+  const images = [...(about.images || [])];
+  while (images.length < 3) images.push({ src: "", alt: "" });
+
+  return (
+    <div className="space-y-4 border border-gray-200 rounded-2xl p-4 bg-gray-50">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">eyebrow</label>
+          <input value={about.eyebrow ?? ""} onChange={(e) => update({ eyebrow: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">titleTop</label>
+          <input value={about.titleTop ?? ""} onChange={(e) => update({ titleTop: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">titleAccent</label>
+          <input value={about.titleAccent ?? ""} onChange={(e) => update({ titleAccent: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">titleBottom</label>
+          <input value={about.titleBottom ?? ""} onChange={(e) => update({ titleBottom: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">description</label>
+          <textarea rows={3} value={about.description ?? ""} onChange={(e) => update({ description: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">descriptionSecondary</label>
+          <textarea rows={3} value={about.descriptionSecondary ?? ""} onChange={(e) => update({ descriptionSecondary: e.target.value })} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {images.map((img, index) => (
+          <div key={index} className="rounded-2xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Image {index + 1}</div>
+                <div className="text-xs text-gray-400">Upload a URL or file</div>
+              </div>
+              <label className="text-[11px] text-gray-500 inline-flex items-center gap-2">
+                <input type="radio" checked={about.mainImageIndex === index} onChange={() => update({ mainImageIndex: index })} />
+                Main
+              </label>
+            </div>
+            <ImageField name={`src`} value={img.src} onChange={(src) => setImageField(index, "src", src)} />
+            <div className="mt-3">
+              <label className="text-[11px] font-medium uppercase tracking-wider text-gray-500">alt</label>
+              <input value={img.alt ?? ""} onChange={(e) => setImageField(index, "alt", e.target.value)} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -180,11 +266,15 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
-  const loadList = async () => {
+  const loadList = useCallback(async () => {
+    if (!active) return;
     setLoading(true);
     try {
       if (active.singleton) {
-        const d = active.key === "site" ? await adminGetSite() : await adminGetGalleries();
+        let d;
+        if (active.key === "site") d = await adminGetSite();
+        else if (active.key === "about-galleries") d = await adminGetGalleries();
+        else if (active.key === "home-about") d = await adminGetHomeAbout();
         setSingleton(d);
         setItems([]);
       } else {
@@ -195,9 +285,14 @@ export default function AdminDashboard() {
     } catch (e) {
       setMsg({ type: "error", text: e?.response?.data?.detail || "Failed to load" });
     } finally { setLoading(false); }
-  };
+  }, [active]);
 
-  useEffect(() => { if (active) { setEditing(null); loadList(); } /* eslint-disable-next-line */ }, [activeKey]);
+  useEffect(() => {
+    if (active) {
+      setEditing(null);
+      loadList();
+    }
+  }, [active, loadList]);
 
   if (authLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!admin) return <Navigate to="/admin/login" replace />;
@@ -206,8 +301,12 @@ export default function AdminDashboard() {
 
   const startNew = () => {
     if (!active || active.singleton || active.readOnly) return;
-    // Build empty doc based on first existing item shape
-    const template = items[0] ? Object.fromEntries(Object.keys(items[0]).filter((k) => !/^(id|_id|created_at|updated_at)$/.test(k)).map((k) => [k, Array.isArray(items[0][k]) ? [] : typeof items[0][k] === "number" ? 0 : typeof items[0][k] === "boolean" ? false : (items[0][k] && typeof items[0][k] === "object" ? {} : "")])) : {};
+    // Build empty doc based on first existing item shape or on resource primary keys
+    const template = items[0]
+      ? Object.fromEntries(Object.keys(items[0]).filter((k) => !/^(id|_id|created_at|updated_at)$/.test(k)).map((k) => [k, Array.isArray(items[0][k]) ? [] : typeof items[0][k] === "number" ? 0 : typeof items[0][k] === "boolean" ? false : (items[0][k] && typeof items[0][k] === "object" ? {} : "")]))
+      : active.primary
+        ? Object.fromEntries(active.primary.map((k) => [k, ""]))
+        : {};
     setEditing({ doc: template, isNew: true });
   };
 
@@ -215,7 +314,14 @@ export default function AdminDashboard() {
     setSaving(true);
     try {
       if (active.singleton) {
-        const fn = active.key === "site" ? adminUpdateSite : adminUpdateGalleries;
+        const fn = active.key === "site"
+          ? adminUpdateSite
+          : active.key === "about-galleries"
+            ? adminUpdateGalleries
+            : active.key === "home-about"
+              ? adminUpdateHomeAbout
+              : null;
+        if (!fn) throw new Error("Unknown singleton save target");
         const saved = await fn(doc);
         setSingleton(saved);
         setMsg({ type: "success", text: "Saved" });
@@ -238,6 +344,11 @@ export default function AdminDashboard() {
   };
 
   const doDelete = async (row) => {
+    if (items.length <= 1) {
+      setMsg({ type: "error", text: "At least one item is required; cannot delete the last entry." });
+      setTimeout(() => setMsg(null), 2500);
+      return;
+    }
     if (!window.confirm("Delete this item?")) return;
     try {
       await adminDelete(active.key, row.id);
@@ -309,7 +420,17 @@ export default function AdminDashboard() {
           {active?.singleton && (
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               {loading ? <div className="text-sm text-gray-500">Loading...</div> : (
-                <ItemForm initial={singleton || {}} onSave={doSave} onCancel={() => loadList()} saving={saving} />
+                active.key === "home-about" ? (
+                  <div className="space-y-6">
+                    <HomeAboutEditor value={singleton || {}} onChange={setSingleton} />
+                    <div className="flex items-center justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => loadList()} className="rounded-full"><X className="w-4 h-4 mr-1" />Cancel</Button>
+                      <Button type="button" disabled={saving} onClick={() => doSave(singleton)} className="bg-green-600 hover:bg-green-700 rounded-full"><Save className="w-4 h-4 mr-1" />{saving ? "Saving..." : "Save"}</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <ItemForm initial={singleton || {}} onSave={doSave} onCancel={() => loadList()} saving={saving} hideFields={active.key === "site" ? ["homeAbout"] : []} />
+                )
               )}
             </div>
           )}
@@ -330,7 +451,7 @@ export default function AdminDashboard() {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b border-gray-100">
                       <tr>
-                        {(active.primary || Object.keys(items[0] || {}).slice(0, 4)).map((c) => (
+                        {(active.primary || Object.keys(items[0] || {}).filter((c) => !/^(?:id|_id|created_at|updated_at)$/.test(c)).slice(0, 4)).map((c) => (
                           <th key={c} className="text-left px-4 py-2.5 font-semibold text-gray-600 text-xs uppercase tracking-wider">{c}</th>
                         ))}
                         {!active.readOnly && <th className="px-4 py-2.5 text-right w-32"></th>}
@@ -342,7 +463,7 @@ export default function AdminDashboard() {
                       {!loading && filtered.length === 0 && (<tr><td colSpan={99} className="text-center py-10 text-gray-400">No items</td></tr>)}
                       {!loading && filtered.map((row) => (
                         <tr key={row.id} className="border-b border-gray-50 hover:bg-green-50/30">
-                          {(active.primary || Object.keys(items[0] || {}).slice(0, 4)).map((c) => {
+                          {(active.primary || Object.keys(items[0] || {}).filter((c) => !/^(?:id|_id|created_at|updated_at)$/.test(c)).slice(0, 4)).map((c) => {
                             const v = row[c];
                             const display = v && typeof v === "object" ? JSON.stringify(v).slice(0, 60) : String(v ?? "").slice(0, 90);
                             return <td key={c} className="px-4 py-2.5 text-gray-800 align-top">{display}</td>;

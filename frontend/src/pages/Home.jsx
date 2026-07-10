@@ -10,7 +10,8 @@ import SectionHeader from "../components/common/SectionHeader";
 import ClientsMarquee from "../components/common/ClientsMarquee";
 import TestimonialsCarousel from "../components/common/TestimonialsCarousel";
 import CTABanner from "../components/common/CTABanner";
-import { SERVICES as MOCK_SERVICES, SOLUTIONS as MOCK_SOLUTIONS, PUBLICATIONS as MOCK_PUBS, PUBLISHERS } from "../data/mock";
+import { assetUrl } from "../lib/api";
+import { SERVICES as MOCK_SERVICES, SOLUTIONS as MOCK_SOLUTIONS, PUBLICATIONS as MOCK_PUBS, PUBLISHERS, HOME_ABOUT as MOCK_HOME_ABOUT } from "../data/mock";
 import useContent from "../hooks/useContent";
 
 const iconMap = { Dna, BarChart3, Users, GraduationCap, Cpu, Cloud, Terminal, Briefcase, BookOpen, Presentation };
@@ -33,7 +34,14 @@ export default function Home() {
   const { data: SERVICES } = useContent("services", MOCK_SERVICES);
   const { data: SOLUTIONS } = useContent("solutions", MOCK_SOLUTIONS);
   const { data: PUBLICATIONS } = useContent("publications", MOCK_PUBS);
+  const { data: homeAbout } = useContent("home-about", MOCK_HOME_ABOUT);
   const solutionIcons = { "genome-station": Cpu, gstack: Cloud, sqit: Terminal };
+  const mainAboutIndex = Number.isInteger(homeAbout?.mainImageIndex)
+    ? Math.min(Math.max(0, homeAbout.mainImageIndex), (homeAbout.images || []).length - 1)
+    : 0;
+  const mainImage = (homeAbout.images || [])[mainAboutIndex] || (homeAbout.images || [])[0] || {};
+  const secondaryImages = (homeAbout.images || []).filter((_, idx) => idx !== mainAboutIndex).slice(0, 2);
+  const primaryCta = (homeAbout.ctas || []).find((cta) => cta.primary) || (homeAbout.ctas || [])[0];
   const latestPubs = (PUBLICATIONS || []).slice(0, 3);
   const homeSolutions = (SOLUTIONS || []).filter((s) => ["genome-station", "gstack", "sqit"].includes(s.slug));
 
@@ -48,36 +56,72 @@ export default function Home() {
 
       <HomeHero />
 
-      {/* Stats - overlaps hero */}
+
+
+  {/* Stats - overlaps hero */}
       <div className="container-x -mt-16 md:-mt-14 relative z-10">
         <StatsBar variant="dark" />
       </div>
 
+
       {/* About Bionivid */}
       <section className="section-y">
-        <div className="container-x grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+        <div className="container-x grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <motion.div initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-            <div className="inline-flex items-center gap-2 mb-3">
-              <span className="h-0.5 w-8 bg-green-600" />
-              <span className="text-xs font-semibold text-green-700 uppercase tracking-widest">About Bionivid</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-display text-gray-900 leading-tight">Your trusted research partner in <span className="text-gradient-green">genomics</span></h2>
+            {homeAbout?.eyebrow && (
+              <div className="inline-flex items-center gap-2 mb-3">
+                <span className="h-0.5 w-8 bg-green-600" />
+                <span className="text-xs font-semibold text-green-700 uppercase tracking-widest">{homeAbout.eyebrow}</span>
+              </div>
+            )}
+            <h2 className="text-3xl md:text-4xl font-bold font-display text-gray-900 leading-tight">
+              {homeAbout?.titleTop} <span className="text-gradient-green">{homeAbout?.titleAccent}</span> {homeAbout?.titleBottom}
+            </h2>
             <div className="mt-5 space-y-4 text-gray-600 leading-relaxed text-[15px]">
-              <p>Bionivid is your trusted research partner for genomics and NGS application-based data analytics. Our mission is to actively collaborate on your research, providing timely solutions and scientific insights.</p>
-              <p>With advanced bioinformatics software (SQIT) and cutting-edge hardware (Genome Station), we offer tailored solutions for research projects, leveraging our extensive genomics expertise. As a research collaborator, you will have transparent access to in-house developed protocols, commercial kits, and reagents required for major projects.</p>
+              {homeAbout?.description && <p>{homeAbout.description}</p>}
+              {homeAbout?.descriptionSecondary && <p>{homeAbout.descriptionSecondary}</p>}
             </div>
-            <Button asChild size="lg" className="mt-6 bg-green-600 hover:bg-green-700 text-white rounded-full px-6">
-              <Link to="/about">Learn More About Us <ArrowRight className="w-4 h-4 ml-1" /></Link>
-            </Button>
+            {primaryCta && (
+              <div className="mt-6">
+                {primaryCta.href ? (
+                  <a href={primaryCta.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-green-600 px-6 py-3 text-white text-sm font-medium hover:bg-green-700 transition">
+                    {primaryCta.label} <ArrowRight className="w-4 h-4" />
+                  </a>
+                ) : (
+                  <Button asChild size="lg" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6">
+                    <Link to={primaryCta.to || "/about"}>{primaryCta.label} <ArrowRight className="w-4 h-4 ml-1" /></Link>
+                  </Button>
+                )}
+              </div>
+            )}
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="grid grid-cols-3 grid-rows-2 gap-3 h-[380px]">
-            <img src="https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg" alt="Bionivid Office" className="col-span-2 row-span-2 w-full h-full object-cover rounded-2xl" />
-            <img src="https://images.pexels.com/photos/8533087/pexels-photo-8533087.jpeg" alt="Lab" className="w-full h-full object-cover rounded-2xl" />
-            <img src="https://images.pexels.com/photos/5945799/pexels-photo-5945799.jpeg" alt="Team" className="w-full h-full object-cover rounded-2xl" />
+          <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="grid gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-3">
+              <div className="overflow-hidden rounded-3xl bg-gray-100 shadow-sm">
+                {mainImage?.src ? (
+                  <img src={assetUrl(mainImage.src)} alt={mainImage.alt || "Home about"} className="w-full h-full min-h-[420px] object-cover" />
+                ) : (
+                  <div className="h-[420px] flex items-center justify-center text-gray-400">No image selected</div>
+                )}
+              </div>
+              <div className="grid gap-3">
+                {secondaryImages.map((img, index) => (
+                  <div key={index} className="overflow-hidden rounded-3xl bg-gray-100 shadow-sm h-48">
+                    {img?.src ? (
+                      <img src={assetUrl(img.src)} alt={img.alt || `About image ${index + 1}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-400">No image</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
+
+    
 
       {/* Services */}
       <section className="section-y bg-gradient-to-b from-white to-green-50/40">

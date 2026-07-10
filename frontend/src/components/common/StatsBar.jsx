@@ -1,10 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { BookOpen, ClipboardList, TestTube2, Lightbulb } from "lucide-react";
+import * as Icons from "lucide-react";
 import { STATS as MOCK } from "../../data/mock";
 import useContent from "../../hooks/useContent";
 
-const iconMap = { BookOpen, ClipboardList, TestTube2, Lightbulb };
+const resolveIcon = (name) => {
+  if (typeof name !== "string") return Icons.BookOpen;
+  return Icons[name] || Icons.BookOpen;
+};
 
 export default function StatsBar({ variant = "light" }) {
   const { data: STATS } = useContent("stats", MOCK);
@@ -14,7 +17,7 @@ export default function StatsBar({ variant = "light" }) {
     <div className={`rounded-2xl ${dark ? "bg-gradient-to-r from-green-700 to-green-800 text-white" : "bg-white shadow-lg border border-gray-100"} px-4 py-5 md:px-6 md:py-6`}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-2">
         {list.map((s, i) => {
-          const Icon = iconMap[s.icon] || BookOpen;
+          const Icon = resolveIcon(s.icon);
           return (
             <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="flex items-center gap-3 md:gap-4 md:justify-center">
               <div className={`w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0 ${dark ? "bg-white/10" : "bg-green-50"}`}>

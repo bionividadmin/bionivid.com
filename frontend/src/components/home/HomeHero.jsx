@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { HERO_SLIDES as MOCK } from "../../data/mock";
 import { Button } from "../ui/button";
+import { assetUrl } from "../../lib/api";
 import useContent from "../../hooks/useContent";
 
 export default function HomeHero() {
@@ -62,7 +63,7 @@ export default function HomeHero() {
           <AnimatePresence mode="wait">
             <motion.div key={"img" + idx} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.6 }} className="relative">
               <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/5">
-                <img src={s.image} alt={s.titleAccent} className="w-full h-full object-cover" />
+                <img src={assetUrl(s.image)} alt={s.titleAccent} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-green-900/20 via-transparent to-transparent pointer-events-none" />
               </div>
               <div aria-hidden className="absolute -bottom-6 -right-6 w-40 h-40 rounded-3xl bg-green-500/10 -z-10 hidden md:block" />

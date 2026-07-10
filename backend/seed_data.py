@@ -23,6 +23,25 @@ SITE = {
     "sqitLogo": "https://customer-assets.emergentagent.com/job_nivilabs-showcase/artifacts/ea0bfh6c_sqit.ai.green.png",
 }
 
+HOME_ABOUT = {
+    "id": "main",
+    "eyebrow": "About Bionivid",
+    "titleTop": "Your trusted research partner in",
+    "titleAccent": "genomics",
+    "titleBottom": "and bioinformatics",
+    "description": "Bionivid is your trusted research partner for genomics and NGS application-based data analytics. Our mission is to actively collaborate on your research, providing timely solutions and scientific insights.",
+    "descriptionSecondary": "With advanced bioinformatics software (SQIT) and cutting-edge hardware (Genome Station), we offer tailored solutions for research projects, leveraging our extensive genomics expertise.",
+    "ctas": [
+        {"label": "Learn More About Us", "to": "/about", "primary": True}
+    ],
+    "images": [
+        {"src": "https://images.pexels.com/photos/15202224/pexels-photo-15202224.jpeg", "alt": "Bionivid Office"},
+        {"src": "https://images.pexels.com/photos/8533087/pexels-photo-8533087.jpeg", "alt": "Lab"},
+        {"src": "https://images.pexels.com/photos/5945799/pexels-photo-5945799.jpeg", "alt": "Team"}
+    ],
+    "mainImageIndex": 0,
+}
+
 HERO_SLIDES = [
     {"order": 0, "eyebrow": "Your Trusted Research Partner \u2014 Since 2011", "titleTop": "Advancing", "titleAccent": "Genomics", "titleBottom": "through Data & Innovation",
      "body": "We deliver advanced genomics solutions and bioinformatics expertise to accelerate research and drive innovation.",

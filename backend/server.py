@@ -156,6 +156,7 @@ async def on_startup():
         await _ensure_admin()
         await _seed_singleton("site_settings", seed.SITE)
         await _seed_singleton("about_galleries", seed.ABOUT_GALLERIES)
+        await _seed_singleton("home_about", seed.HOME_ABOUT)
         await _seed_collection("hero_slides", seed.HERO_SLIDES)
         await _seed_collection("stats", seed.STATS)
         await _seed_collection("services", seed.SERVICES)
@@ -255,6 +256,12 @@ async def get_about_galleries():
     return clean(doc) or {}
 
 
+@api.get("/content/home-about")
+async def get_home_about():
+    doc = await db["home_about"].find_one({"id": "main"})
+    return clean(doc) or {}
+
+
 @api.get("/content/{resource}")
 async def list_public(resource: str, q: Optional[str] = None):
     meta = _res(resource)
@@ -323,6 +330,19 @@ async def admin_put_galleries(body: dict):
     body["updated_at"] = now_iso()
     await db["about_galleries"].update_one({"id": "main"}, {"$set": body}, upsert=True)
     return clean(await db["about_galleries"].find_one({"id": "main"}))
+
+
+@api.get("/admin/home-about", dependencies=[Depends(require_admin)])
+async def admin_get_home_about():
+    return clean(await db["home_about"].find_one({"id": "main"})) or {}
+
+
+@api.put("/admin/home-about", dependencies=[Depends(require_admin)])
+async def admin_put_home_about(body: dict):
+    body["id"] = "main"
+    body["updated_at"] = now_iso()
+    await db["home_about"].update_one({"id": "main"}, {"$set": body}, upsert=True)
+    return clean(await db["home_about"].find_one({"id": "main"}))
 
 
 @api.get("/admin/{resource}", dependencies=[Depends(require_admin)])

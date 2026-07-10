@@ -79,3 +79,5 @@ export const adminGetSite = () => api.get("/admin/site").then((r) => r.data);
 export const adminUpdateSite = (body) => api.put("/admin/site", body).then((r) => r.data);
 export const adminGetGalleries = () => api.get("/admin/about-galleries").then((r) => r.data);
 export const adminUpdateGalleries = (body) => api.put("/admin/about-galleries", body).then((r) => r.data);
+export const adminGetHomeAbout = () => api.get("/admin/home-about").then((r) => r.data);
+export const adminUpdateHomeAbout = (body) => api.put("/admin/home-about", body).then((r) => r.data);

@@ -2,6 +2,8 @@ import os
 import uuid
 import shutil
 import logging
+import asyncio
+from html import escape
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, List
@@ -17,12 +19,18 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from auth import (
     hash_password, verify_password, create_access_token, require_admin,
 )
+from email_service import send_email
 import seed_data as seed
 
 ROOT_DIR = Path(__file__).parent
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 load_dotenv(ROOT_DIR / ".env")
+
+CONTACT_NOTIFICATION_EMAIL = os.getenv(
+    "CONTACT_NOTIFICATION_EMAIL",
+    "support@sqit.online",
+)
 
 # --------------------------------------------------------------------
 # DB
@@ -54,6 +62,64 @@ def clean(doc: dict | None) -> dict | None:
         return doc
     doc.pop("_id", None)
     return doc
+
+
+def _contact_notification_html(doc: dict) -> str:
+    fields = [
+        ("Full Name", doc["name"]),
+        ("Email", doc["email"]),
+        ("Organization", doc.get("org") or "Not provided"),
+        ("Phone", doc.get("phone") or "Not provided"),
+        ("Subject", doc.get("subject") or "Not provided"),
+        ("Message", doc["message"]),
+        ("Submitted Date & Time", doc["created_at"]),
+    ]
+    rows = "".join(
+        f"<tr><td style=\"padding:8px;font-weight:600;vertical-align:top;\">{escape(label)}</td>"
+        f"<td style=\"padding:8px;white-space:pre-wrap;\">{escape(str(value))}</td></tr>"
+        for label, value in fields
+    )
+    return (
+        "<div style=\"font-family:Arial,sans-serif;color:#1f2937;\">"
+        "<h2>New Contact Form Submission</h2>"
+        "<table style=\"border-collapse:collapse;max-width:700px;\">"
+        f"{rows}</table></div>"
+    )
+
+
+def _contact_acknowledgement_html(doc: dict) -> str:
+    name = escape(doc["name"])
+    subject = escape(doc.get("subject") or "your enquiry")
+    return (
+        "<div style=\"font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;\">"
+        f"<p>Dear {name},</p>"
+        "<p>Thank you for contacting Bionivid Technology. We have received your enquiry "
+        f"regarding <strong>{subject}</strong>.</p>"
+        "<p>Our team will review it and respond within one business day.</p>"
+        "<p>Regards,<br><strong>Bionivid Technology</strong><br>"
+        "<a href=\"https://bionivid.in\">https://bionivid.in</a></p></div>"
+    )
+
+
+async def _send_contact_emails(doc: dict) -> None:
+    results = await asyncio.gather(
+        send_email(
+    to=CONTACT_NOTIFICATION_EMAIL,
+    subject="New Contact Form Submission",
+    html=_contact_notification_html(doc),
+),
+
+        send_email(
+    to=doc["email"],
+    subject="We have received your enquiry",
+    html=_contact_acknowledgement_html(doc),
+),
+        return_exceptions=True,
+    )
+
+    for recipient, result in zip((CONTACT_NOTIFICATION_EMAIL, doc["email"]), results):
+        if isinstance(result, Exception):
+            log.exception("Could not send contact email to %s", recipient, exc_info=result)
 
 
 # Map public/admin resource names -> Mongo collections + default sort
@@ -291,6 +357,7 @@ async def submit_contact(body: ContactBody):
     doc["id"] = str(uuid.uuid4())
     doc["created_at"] = now_iso()
     await db["contact_submissions"].insert_one(doc)
+    await _send_contact_emails(doc)
     return {"ok": True, "id": doc["id"]}
 
 
